@@ -28,6 +28,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    // POST /api/users/login/client
+    @PostMapping("/login/client")
+    public ResponseEntity<?> login(@RequestBody Client client) {
+        return ResponseEntity.ok(userService.login(client));
+    }
+
     // POST /api/users/register/client
     @PostMapping("/register/client")
     public ResponseEntity<Client> register(@RequestBody Client client) {
