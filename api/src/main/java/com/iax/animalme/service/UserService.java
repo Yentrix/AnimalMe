@@ -3,6 +3,7 @@ package com.iax.animalme.service;
 import com.iax.animalme.model.Client;
 import com.iax.animalme.repository.ClientRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -29,5 +30,25 @@ public class UserService {
 
     public List<Client> getAllClients() {
         return clientRepository.findAll();
+    }
+
+    public Optional<Client> login(Client client) {
+        try {
+            boolean isValid = authenticate(client.getEmail(), client.getPassword());
+
+            if (isValid) {
+                return clientRepository.findByEmail(client.getEmail());
+            } else {
+                throw new RuntimeException("Email o clave incorrectos");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean authenticate(String email, String password){
+        return clientRepository.findByEmail(email)
+                .map(client -> password.equals(client.getPassword()))
+                .orElse(false);
     }
 }
