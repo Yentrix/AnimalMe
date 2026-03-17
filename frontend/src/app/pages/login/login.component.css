@@ -8,6 +8,7 @@
   overflow: hidden;
   background-color: #1a1a1a; /* Un fondo oscuro por si fallan las fotos */
   padding: -4px;
+  z-index: 0;
 }
 
 .image-grid {
