@@ -1,6 +1,6 @@
 # AnimalMe — Aplicación de adopción de animales
 
-AnimalMe es una aplicación de adopción de animaes desarrollada con **Springboot**, **Angular** y **AndroidStudio** pensada como base para construir una aplicacion completa de adopcion y seguimiento de animales y refugios.
+AnimalMe es un proyecto desarrolado con **Springboot**, **Angular** y **AndroidStudio** pensado como la base para construir una aplicacion completa de adopcion y seguimiento de animales y refugios.
 
 <p align="center">
   <img src="frontend/src/assets/logo_text.png" width="200">
@@ -13,8 +13,8 @@ AnimalMe es una aplicación de adopción de animaes desarrollada con **Springboo
 Antes de instalar el proyecto, asegúrate de tener instalado:
 
 - MySQL
-- Node.js  
-- Java 21  
+- Node.js
+- Java 25
 - Android Studio
 
 Puedes verificar tus versiones con:
