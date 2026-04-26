@@ -1,0 +1,42 @@
+services:
+
+  animalme-db:
+    image: mariadb:11
+    container_name: animalme-db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: animalme
+      MARIADB_USER: animalme
+      MARIADB_PASSWORD: animalme123
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  animalme-api:
+    build: ./api
+    container_name: animalme-api
+    depends_on:
+      animalme-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://animalme-db:3306/animalme
+      SPRING_DATASOURCE_USERNAME: animalme
+      SPRING_DATASOURCE_PASSWORD: animalme123
+
+  animalme-frontend:
+    build: ./frontend
+    container_name: animalme-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - animalme-api
+
+volumes:
+  db_data:

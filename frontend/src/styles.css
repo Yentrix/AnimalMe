@@ -4,7 +4,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Protest+Strike&display=swap');
 
 :root {
-  /* PALETA DE COLORES */
   --primary-red: #d63031;
   --secondary-red: #e17055;
   --light-red: #ff7675;
@@ -21,15 +20,10 @@
   box-sizing: border-box;
 }
 
-/* Aplicar a todos los inputs autocompletados */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus {
-  /* Cambia el color del texto */
   -webkit-text-fill-color: #333 !important;
-  
-  /* Cambia el color de fondo usando un shadow interno */
-  /* Reemplaza #ffffff por el color que desees */
   transition: background-color 5000s ease-in-out 0s;
   box-shadow: 0 0 0px 1000px var(--bg-crema) inset !important;
 }
