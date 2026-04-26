@@ -14,7 +14,7 @@ Antes de instalar el proyecto, asegúrate de tener instalado:
 
 - MySQL
 - Node.js
-- Java 25
+- Java 21
 - Android Studio
 
 Puedes verificar tus versiones con:
