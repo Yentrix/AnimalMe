@@ -29,11 +29,11 @@ public class FileStorageService {
     public String storeFile(MultipartFile file, String folder, String prefix) throws IOException {
         String fileName = prefix + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path targetLocation = Paths.get(basePath, folder).toAbsolutePath().resolve(fileName);
-        
         Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
+        // CAMBIO AQUÍ: Debe coincidir con lo configurado en WebConfig (/uploads/)
         return ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/api/v1/files/") // Endpoint que servirá las imágenes
+                .path("/uploads/")
                 .path(folder + "/")
                 .path(fileName)
                 .toUriString();

@@ -16,15 +16,11 @@ export class AuthComponent {
   isExiting = false;
 
   toggleAuth() {
-    // 1. Iniciamos la desaparición
     this.isExiting = true;
 
-    // 2. Un retraso mínimo para que el navegador registre el cambio de clase
-    // pero lo suficientemente rápido para que la tarjeta empiece a crecer ya.
     setTimeout(() => {
       this.isLogin = !this.isLogin;
 
-      // 3. Volvemos a mostrar el contenido
       setTimeout(() => {
         this.isExiting = false;
       }, 50);

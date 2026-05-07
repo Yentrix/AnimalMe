@@ -3,6 +3,7 @@ package com.iax.animalme.domain.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.iax.animalme.domain.enums.PublicationStatus;
 
 import jakarta.persistence.Entity;
@@ -35,12 +36,16 @@ public class Publication {
 
     @ManyToOne
     @JoinColumn(name = "author_id")
+    @JsonIgnoreProperties({"publications", "password", "pets"}) // Limpia el autor [cite: 33]
     private User author;
 
     @ManyToMany
-    @JoinTable(name = "publication_pets", joinColumns = @JoinColumn(name = "publication_id"), inverseJoinColumns = @JoinColumn(name = "pet_id"))
+    @JoinTable(name = "publication_pets", 
+               joinColumns = @JoinColumn(name = "publication_id"), 
+               inverseJoinColumns = @JoinColumn(name = "pet_id"))
     private List<Pet> pets;
 
     @OneToMany(mappedBy = "publication")
+    @JsonIgnoreProperties("publication") // Los comentarios no deben recargar la publicación [cite: 35]
     private List<Comment> comments;
 }

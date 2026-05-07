@@ -3,7 +3,7 @@ package com.iax.animalme.domain.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.iax.animalme.domain.enums.UserRole;
 import com.iax.animalme.domain.enums.UserStatus;
 
@@ -45,11 +45,11 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore // NUNCA enviar la contraseña al frontend 
     private String password;
 
     private String contactPhone;
     private String contactEmail;
-
     private String profilePictureUrl;
     private String country;
     private String city;
@@ -63,9 +63,13 @@ public class User {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "owner")
+    @JsonIgnore // Evita cargar todas las mascotas del dueño recursivamente [cite: 44]
     private List<Pet> pets;
 
     @ManyToMany
-    @JoinTable(name = "favorites", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "publication_id"))
+    @JoinTable(name = "favorites", 
+               joinColumns = @JoinColumn(name = "user_id"), 
+               inverseJoinColumns = @JoinColumn(name = "publication_id"))
+    @JsonIgnore // Evita bucles con publicaciones favoritas [cite: 45]
     private List<Publication> favoritePublications;
 }

@@ -1,1 +1,115 @@
-<p>pet-create works!</p>
+<div class="management-container">
+    <header class="page-header">
+        <div class="header-content">
+            <h1>Mis Mascotas</h1>
+            <p class="subtitle">Gestiona y publica tus compañeros</p>
+        </div>
+        <button class="btn-primary-neo" (click)="showModal = true">
+            <span class="icon">+</span> Añadir Mascota
+        </button>
+    </header>
+
+    <div class="pets-grid">
+        <div class="pet-card" *ngFor="let pet of pets">
+            <div class="card-image-container">
+                <img [src]="pet.images?.length > 0 ? pet.images[0].url : 'assets/placeholder.png'"
+                    (error)="handleImageError($event)" class="card-img-top">
+            </div>
+
+            <div class="card-content">
+                <div class="card-info">
+                    <div class="title-row">
+                        <h3>{{ pet.name }}</h3>
+                        <span class="status-tag-inline" [ngClass]="pet.adoptionStatus">
+                            {{ pet.adoptionStatus }}
+                        </span>
+                    </div>
+                    <p class="breed-text">{{ pet.species?.name }} • {{ pet.breed?.name }}</p>
+                    <p class="description-text">{{ pet.description }}</p>
+                </div>
+
+                <div class="card-footer">
+                    <div class="badges-row">
+                        <span class="detail-badge">{{ pet.sex }}</span>
+                        <span class="detail-badge" *ngIf="pet.sizeCm">{{ pet.sizeCm }}cm</span>
+                    </div>
+                    <button class="btn-edit-neo" (click)="editPet(pet)">✏️ Editar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" *ngIf="showModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>{{ isEditing ? 'Editar Mascota' : 'Nueva Mascota' }}</h2>
+                <p>Completa la información del animal</p>
+            </div>
+
+            <div class="avatar-preview" *ngIf="imagePreview">
+                <img [src]="imagePreview" alt="Preview">
+            </div>
+
+            <form [formGroup]="petForm" class="neo-form">
+                <input type="text" formControlName="name" placeholder="Nombre de la mascota (Obligatorio)">
+
+                <div class="input-row">
+                    <div class="autocomplete-wrapper">
+                        <input type="text" formControlName="speciesName" placeholder="Especie"
+                            (input)="onSpeciesSearch($event)">
+                        <ul class="suggestions-list" *ngIf="filteredSpecies.length > 0">
+                            <li *ngFor="let s of filteredSpecies" (click)="selectSpecies(s)">
+                                {{ s.name }}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="autocomplete-wrapper">
+                        <input type="text" formControlName="breedName" placeholder="Raza"
+                            (input)="onBreedSearch($event)">
+                        <ul class="suggestions-list" *ngIf="filteredBreeds.length > 0">
+                            <li *ngFor="let b of filteredBreeds" (click)="selectBreed(b)">
+                                {{ b.name }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <input type="number" formControlName="age" placeholder="Edad (años)">
+                    <input type="number" formControlName="sizeCm" placeholder="Tamaño en cm">
+                </div>
+
+                <div class="input-row">
+                    <select formControlName="sex">
+                        <option value="" disabled selected>Sexo</option>
+                        <option value="Macho">Macho ♂</option>
+                        <option value="Hembra">Hembra ♀</option>
+                    </select>
+                    <select formControlName="adoptionStatus">
+                        <option *ngFor="let status of adoptionStatuses" [value]="status">
+                            {{ status }}
+                        </option>
+                    </select>
+                </div>
+
+                <textarea formControlName="description" placeholder="Cuéntanos algo sobre ella..."></textarea>
+
+                <div class="file-upload-field">
+                    <label class="file-label">
+                        <span class="icon">📷</span>
+                        {{ selectedFile ? selectedFile.name : 'Subir foto' }}
+                        <input type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" (click)="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn-save" (click)="savePet()" [disabled]="petForm.invalid">
+                        {{ isEditing ? 'Actualizar' : 'Guardar Mascota' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

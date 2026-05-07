@@ -3,8 +3,8 @@ import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { AuthComponent } from './pages/auth/auth.component';
 import { HomeComponent } from './pages/home/home.component';
 import { ProfileComponent } from './pages/profile/profile.component';
-import { PetCreateComponent } from './pages/pet-create/pet-create.component';
 import { PostCreateComponent } from './pages/post-create/post-create.component';
+import { PetManagementComponent } from './pages/pet-create/pet-create.component';
 
 export const routes: Routes = [
     {
@@ -14,7 +14,7 @@ export const routes: Routes = [
             { path: 'home', component: HomeComponent },
             { path: 'auth', component: AuthComponent },
             { path: 'profile', component: ProfileComponent },
-            { path: 'pets', component: PetCreateComponent},
+            { path: 'pets', component: PetManagementComponent},
             { path: 'posts', component: PostCreateComponent},
             { path: '', redirectTo: 'home', pathMatch: 'full' }
         ]

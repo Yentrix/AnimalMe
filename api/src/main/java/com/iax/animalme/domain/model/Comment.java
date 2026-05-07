@@ -2,6 +2,9 @@ package com.iax.animalme.domain.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,18 +26,15 @@ public class Comment {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String text;
 
-    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"password", "pets", "publications"}) // Solo datos básicos del autor [cite: 12]
     private User author;
 
     @ManyToOne
     @JoinColumn(name = "publication_id", nullable = false)
+    @JsonIgnore // El comentario no devuelve la publicación para evitar bucles [cite: 13]
     private Publication publication;
-
-    public Comment() {
-        this.createdAt = LocalDateTime.now();
-    }
 }
