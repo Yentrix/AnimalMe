@@ -1,0 +1,89 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+  background: var(--bg-primary);
+  height: 100%;
+  overflow-x: hidden;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color); /* El borde de 2px que pediste */
+  border-radius: 20px;
+  padding: 40px;
+  /* Esta transición hace que el alto del card cambie suavemente */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+  box-shadow: none; /* Estilo plano */
+}
+
+/* Animación de entrada de los formularios */
+.fade-in, .fade-in-alt {
+  animation: fadeInOut 0.4s ease-out forwards;
+}
+
+@keyframes fadeInOut {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header y Footer */
+.auth-header h2 {
+  color: var(--accent-primary);
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.auth-footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px solid var(--border-color);
+  text-align: center;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 20px;
+  padding: 40px;
+  /* Transición de tamaño: coincidiendo con el fade */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.auth-body {
+  /* Transiciones de opacidad sincronizadas con el card */
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  opacity: 1;
+}
+
+.auth-body.exit {
+  opacity: 0;
+  transform: scale(0.98); /* Un ligero encogimiento en lugar de subir */
+}
+
+/* Animación de entrada suave */
+.auth-body:not(.exit) {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -1,1 +1,18 @@
-<p>register works!</p>
+<form (ngSubmit)="onRegister()" class="auth-form register-grid">
+  <div class="form-group">
+    <label>Nombre</label>
+    <input type="text" name="firstName" [(ngModel)]="userData.firstName" required>
+  </div>
+  <div class="form-group full-width">
+    <label>Email</label>
+    <input type="email" name="email" [(ngModel)]="userData.email" required>
+  </div>
+  <div class="form-group full-width">
+    <label>Contraseña</label>
+    <input type="password" name="password" [(ngModel)]="userData.password" required>
+  </div>
+  <span class="error-text" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </span>
+  <button type="submit" class="submit-btn full-width">Crear Cuenta</button>
+</form>

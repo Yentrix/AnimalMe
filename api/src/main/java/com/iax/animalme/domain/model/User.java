@@ -47,6 +47,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    private String contactPhone;
+    private String contactEmail;
+
     private String profilePictureUrl;
     private String country;
     private String city;

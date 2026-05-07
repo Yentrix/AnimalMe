@@ -18,6 +18,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
 import { ThemeService } from '../../services/theme/theme.service';
 import { svgIcons } from '../../icons/svg-icons';
+import { AuthService } from '../../services/auth/auth.service';
 
 export enum SidebarSection {
   ROOT = 0,
@@ -46,6 +47,7 @@ interface SidebarItem {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
+  user$: Observable<any | null>;
   SidebarSectionEnum = SidebarSection;
   currentSection: SidebarSection = SidebarSection.ROOT;
   isMobileSidebarOpen = false;
@@ -58,23 +60,36 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     private router: Router,
     private themeService: ThemeService,
     private sanitizer: DomSanitizer,
+    private authService: AuthService,
     @Inject(DOCUMENT) private doc: Document
   ) {
     this.isDarkMode$ = this.themeService.isDarkMode$
+    this.user$ = this.authService.user$;
   }
 
   ngOnInit(): void {
-    this.rootMenu = [
-      { label: 'Inicio', route: '/home', icon: 'ICON_INICIO' },
-      { label: 'Mascotas', route: '/pets', icon: 'ICON_PETS' }, // Añadido según tus rutas [cite: 116]
-      { label: 'Publicaciones', route: '/posts', icon: 'ICON_POSTS' },
-      { label: 'Mi Perfil', route: '/profile', icon: 'ICON_USER' }
-    ];
+    this.authService.user$.subscribe(user => {
+      this.updateMenu(!!user);
+    });
 
     for (const key of Object.keys(svgIcons) as Array<keyof typeof svgIcons>) {
       this.sanitizedIcons[key] = this.sanitizer.bypassSecurityTrustHtml(svgIcons[key]);
     }
+  }
 
+  updateMenu(isLoggedIn: boolean): void {
+    if (isLoggedIn) {
+      this.rootMenu = [
+        { label: 'Inicio', route: '/home', icon: 'ICON_INICIO' },
+        { label: 'Mascotas', route: '/pets', icon: 'ICON_PETS' },
+        { label: 'Publicaciones', route: '/posts', icon: 'ICON_POSTS' },
+        { label: 'Mi Perfil', route: '/profile', icon: 'ICON_USER' }
+      ];
+    } else {
+      this.rootMenu = [
+        { label: 'Inicio', route: '/home', icon: 'ICON_INICIO' }
+      ];
+    }
     this.backToRoot();
   }
 
@@ -106,7 +121,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   logOut() {
-    // this.authService.logout();
+    this.authService.logout();
+    this.router.navigate(['/auth']);
   }
 
   toggleTheme() {

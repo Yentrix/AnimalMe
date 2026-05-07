@@ -42,6 +42,7 @@ public class AuthApplicationService {
         user.setRole(UserRole.USER);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setContactEmail(user.getEmail());
         return userRepository.save(user);
     }
 }

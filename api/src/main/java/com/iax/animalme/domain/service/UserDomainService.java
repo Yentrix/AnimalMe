@@ -56,6 +56,8 @@ public class UserDomainService {
                 .firstName(newUser.getFirstName())
                 .lastName(newUser.getLastName())
                 .email(newUser.getEmail())
+                .contactPhone(newUser.getContactPhone())
+                .contactEmail(newUser.getContactEmail())
                 .profilePictureUrl(imageURL)
                 .country(newUser.getCountry())
                 .city(newUser.getCity())

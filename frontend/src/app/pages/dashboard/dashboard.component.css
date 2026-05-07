@@ -35,12 +35,12 @@
 }
 
 .brand-logo {
-  width: 40px;
-  height: 40px;
-  padding: 5px;
-  object-fit: cover;
-  background-color: var(--bg-primary);
-  border-radius: 16px;
+    width: 40px;
+    height: 40px;
+    padding: 5px;
+    object-fit: cover;
+    background-color: var(--bg-primary);
+    border-radius: 16px;
 }
 
 .menu {
@@ -134,12 +134,12 @@
     padding: 10px 16px;
     cursor: pointer;
     border-radius: 12px;
-    
+
     border: 2px solid transparent !important;
-    background: transparent; 
+    background: transparent;
     color: var(--text-primary);
     font-weight: 700;
-    
+
     transition: transform 0.1s ease, background-color 0.3s ease;
     z-index: 10;
 }
@@ -159,6 +159,35 @@
 
 .login-item svg {
     stroke: currentColor;
+}
+
+.logout-item {
+    position: absolute;
+    bottom: 20px;
+    left: 15px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 12px;
+    border: 2px solid transparent !important;
+    background: transparent;
+    color: var(--sidebar-text-muted);
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.logout-item:hover {
+    background: var(--hover-bg);
+    transform: translateY(-2px);
+    color: fff;
+}
+
+.logout-item:active {
+    transform: scale(0.95);
 }
 
 .mobile-only {

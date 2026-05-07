@@ -80,6 +80,8 @@ html {
     color: var(--text-primary);
     line-height: 1.6;
     transition: background-color var(--transition), color var(--transition);
+    height: 100%;
+    overflow-x: hidden;
 }
 
 .no-select {
@@ -197,3 +199,5 @@ select:-webkit-autofill:focus {
     caret-color: var(--text-primary) !important;
     transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s;
 }
+
+/* AUTH FORMS */

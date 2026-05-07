@@ -26,6 +26,11 @@ public class AuthController {
         User user = authAppService.login(loginRequestDto);
         return ResponseEntity.ok(user);
     }
-    
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody User user) {
+        User newUser = authAppService.registerClient(user);
+        return ResponseEntity.ok(newUser);
+    }
 
 }

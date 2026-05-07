@@ -1,3 +1,21 @@
-<p>auth works!</p>
-<app-login/>
-<app-register/>
+<div class="auth-container">
+  <div class="auth-card" [class.register-mode]="!isLogin">
+    
+    <div class="auth-header">
+      <h2>{{ isLogin ? '¡Bienvenido de vuelta!' : 'Crea tu cuenta' }}</h2>
+      <p>{{ isLogin ? 'Tus amigos peludos te esperan.' : 'Únete a nuestra comunidad de adopción.' }}</p>
+    </div>
+
+    <div class="auth-body" [class.exit]="isExiting">
+      <app-login *ngIf="isLogin" (switchToRegister)="toggleAuth()"></app-login>
+      <app-register *ngIf="!isLogin" (switchToLogin)="toggleAuth()"></app-register>
+    </div>
+
+    <div class="auth-footer">
+      <button (click)="toggleAuth()" class="toggle-btn">
+        {{ isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión' }}
+      </button>
+    </div>
+
+  </div>
+</div>
