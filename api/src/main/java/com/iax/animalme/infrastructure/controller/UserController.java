@@ -29,7 +29,6 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<User>> listByRole(@RequestParam(required = false) UserRole role) {
-        // 1. Agrega este print para ver la consola de Spring
         System.out.println("DEBUG: El rol recibido es: " + role);
 
         if (role != null) {

@@ -1,1 +1,90 @@
-<p>dashboard works!</p>
+<div class="layout-container">
+    <!-- SIDEBAR -->
+    <nav class="sidebar no-select" #sidebarContainer [class.mobile-visible]="isMobileSidebarOpen">
+
+        <!-- BRAND -->
+        <div class="brand">
+            <img src="assets/logo_empty.png" alt="AnimalMe Logo" class="brand-logo" />
+            <span class="brand-name">AnimalMe</span>
+        </div>
+
+        <ul *ngIf="currentSection === SidebarSectionEnum.ROOT" class="menu animate-items">
+            <li class="menu-item" 
+                *ngFor="let item of rootMenu; let i = index" 
+                [ngStyle]="{'--delay': i}"
+                [routerLink]="item.route" 
+                routerLinkActive="active"
+                (click)="item.section && openSection(item.section)">
+                <span class="icon" [innerHTML]="sanitizedIcons[item.icon]"></span>
+                <span>{{ item.label }}</span>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left mobile-only no-select">
+                <img src="assets/logo_empty.png" alt="AnimalMe Logo" class="brand-logo" />
+                <span class="brand-name">AnimalMe</span>
+            </div>
+
+            <div class="topbar-right no-select">
+
+                <button class="theme-toggle topbar-toggle" (click)="toggleTheme()">
+                    <span class="icon">
+                        <ng-container *ngIf="!(isDarkMode$ | async)">
+                            <!-- LIGHT MODE -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 
+                             7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </ng-container>
+
+                        <ng-container *ngIf="isDarkMode$ | async">
+                            <!-- DARK MODE -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3" />
+                                <line x1="12" y1="21" x2="12" y2="23" />
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                                <line x1="1" y1="12" x2="3" y2="12" />
+                                <line x1="21" y1="12" x2="23" y2="12" />
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                            </svg>
+                        </ng-container>
+                    </span>
+                </button>
+
+                <div class="login-item" routerLink="/auth" routerLinkActive="active">
+                    Iniciar sesion
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTAINER -->
+        <section class="page-container">
+            <div class="page" [ngClass]="{ 'fade-in': fadeIn }">
+                <router-outlet (activate)="onActivate()"></router-outlet>
+            </div>
+        </section>
+    </div>
+
+    <button class="floating-menu-btn mobile-only" (click)="toggleMobileSidebar()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+    </button>
+
+    <nav class="bottom-nav no-select" [class.hidden]="isMobileSidebarOpen">
+    </nav>
+</div>

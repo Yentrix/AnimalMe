@@ -15,7 +15,8 @@ export const routes: Routes = [
             { path: 'auth', component: AuthComponent },
             { path: 'profile', component: ProfileComponent },
             { path: 'pets', component: PetCreateComponent},
-            { path: 'posts', component: PostCreateComponent}
+            { path: 'posts', component: PostCreateComponent},
+            { path: '', redirectTo: 'home', pathMatch: 'full' }
         ]
     }
 ];

@@ -27,7 +27,6 @@ public class FileStorageService {
      * @param prefix Prefijo para el archivo (ej: user_id)
      */
     public String storeFile(MultipartFile file, String folder, String prefix) throws IOException {
-        // Generamos un nombre único para evitar colisiones
         String fileName = prefix + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path targetLocation = Paths.get(basePath, folder).toAbsolutePath().resolve(fileName);
         
