@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { PublicationPet, PublicationService, PublicationSummary } from '../../services/publication/publication.service';
+import { svgIcons } from '../../icons/svg-icons';
 
 interface AuthUser {
   id?: number;
@@ -20,12 +22,18 @@ export class HomeComponent implements OnInit {
   searchPetName = '';
   selectedSpecies = '';
   selectedBreed = '';
+  searchDraftPetName = '';
+  selectedSpeciesDraft = '';
+  selectedBreedDraft = '';
+  showOnlyFavorites = false;
+  favoritePublicationIds = new Set<number>();
   speciesOptions: string[] = [];
   breedOptions: string[] = [];
   publicationImageIndex: Record<number, number> = {};
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  sanitizedIcons: Record<keyof typeof svgIcons, SafeHtml>;
 
   isLightboxOpen = false;
   selectedPublication: PublicationSummary | null = null;
@@ -39,9 +47,18 @@ export class HomeComponent implements OnInit {
     ADOPTED: 'Adoptado'
   };
 
-  constructor(private publicationService: PublicationService) { }
+  constructor(
+    private publicationService: PublicationService,
+    private sanitizer: DomSanitizer
+  ) {
+    this.sanitizedIcons = {} as Record<keyof typeof svgIcons, SafeHtml>;
+    for (const key of Object.keys(svgIcons) as Array<keyof typeof svgIcons>) {
+      this.sanitizedIcons[key] = this.sanitizer.bypassSecurityTrustHtml(svgIcons[key]);
+    }
+  }
 
   ngOnInit(): void {
+    this.loadFavoritePublications();
     this.loadPublications();
   }
 
@@ -70,12 +87,23 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  applySearchFilters(): void {
+    this.searchPetName = this.searchDraftPetName;
+    this.selectedSpecies = this.selectedSpeciesDraft;
+    this.selectedBreed = this.selectedBreedDraft;
+    this.applyFilters();
+  }
+
   applyFilters(): void {
     const nameNeedle = this.searchPetName.trim().toLowerCase();
     const speciesNeedle = this.selectedSpecies.trim().toLowerCase();
     const breedNeedle = this.selectedBreed.trim().toLowerCase();
 
     this.publications = this.allPublications.filter(publication => {
+      if (this.showOnlyFavorites && !this.favoritePublicationIds.has(publication.id)) {
+        return false;
+      }
+
       const pets = publication.pets ?? [];
       return pets.some(pet => {
         const petName = (pet.name ?? '').toLowerCase();
@@ -92,23 +120,61 @@ export class HomeComponent implements OnInit {
   }
 
   onSpeciesChange(): void {
+    this.selectedSpeciesDraft = this.selectedSpeciesDraft.trim();
     this.refreshBreedOptions();
-    if (this.selectedBreed && !this.breedOptions.includes(this.selectedBreed)) {
-      this.selectedBreed = '';
+    if (this.selectedBreedDraft && !this.breedOptions.includes(this.selectedBreedDraft)) {
+      this.selectedBreedDraft = '';
     }
-    this.applyFilters();
   }
 
   onBreedChange(): void {
-    this.applyFilters();
+    this.selectedBreedDraft = this.selectedBreedDraft.trim();
   }
 
   clearFilters(): void {
     this.searchPetName = '';
     this.selectedSpecies = '';
     this.selectedBreed = '';
+    this.searchDraftPetName = '';
+    this.selectedSpeciesDraft = '';
+    this.selectedBreedDraft = '';
+    this.showOnlyFavorites = false;
     this.refreshBreedOptions();
     this.applyFilters();
+  }
+
+  toggleFavoritesFilter(): void {
+    this.showOnlyFavorites = !this.showOnlyFavorites;
+    this.applyFilters();
+  }
+
+  isFavorite(publication: PublicationSummary): boolean {
+    return this.favoritePublicationIds.has(publication.id);
+  }
+
+  toggleFavoritePublication(publication: PublicationSummary, event?: Event): void {
+    event?.stopPropagation();
+
+    if (this.isPublicationOwner(publication) || !this.hasSession()) {
+      return;
+    }
+
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      return;
+    }
+
+    if (this.favoritePublicationIds.has(publication.id)) {
+      this.favoritePublicationIds.delete(publication.id);
+    } else {
+      this.favoritePublicationIds.add(publication.id);
+    }
+
+    this.persistFavoritePublications();
+
+    if (this.showOnlyFavorites) {
+      this.applyFilters();
+    }
   }
 
   getCurrentImage(publication: PublicationSummary): string {
@@ -266,6 +332,40 @@ export class HomeComponent implements OnInit {
     return user.id ?? null;
   }
 
+  private getFavoriteStorageKey(userId: number): string {
+    return `animalme:favorites:${userId}`;
+  }
+
+  private loadFavoritePublications(): void {
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      this.favoritePublicationIds = new Set<number>();
+      return;
+    }
+
+    const stored = localStorage.getItem(this.getFavoriteStorageKey(userId));
+    if (!stored) {
+      this.favoritePublicationIds = new Set<number>();
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored) as number[];
+      this.favoritePublicationIds = new Set<number>(parsed.filter(id => Number.isFinite(id)));
+    } catch {
+      this.favoritePublicationIds = new Set<number>();
+    }
+  }
+
+  private persistFavoritePublications(): void {
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      return;
+    }
+
+    localStorage.setItem(this.getFavoriteStorageKey(userId), JSON.stringify(Array.from(this.favoritePublicationIds)));
+  }
+
   private extractSpeciesOptions(publications: PublicationSummary[]): string[] {
     const speciesSet = new Set<string>();
     publications.forEach(publication => {
@@ -280,7 +380,7 @@ export class HomeComponent implements OnInit {
   }
 
   private refreshBreedOptions(): void {
-    const speciesNeedle = this.selectedSpecies.trim().toLowerCase();
+    const speciesNeedle = this.selectedSpeciesDraft.trim().toLowerCase();
     const breedSet = new Set<string>();
 
     this.allPublications.forEach(publication => {

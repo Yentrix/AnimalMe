@@ -10,8 +10,7 @@
 			<input
 				id="petNameSearch"
 				type="text"
-				[(ngModel)]="searchPetName"
-				(ngModelChange)="applyFilters()"
+				[(ngModel)]="searchDraftPetName"
 				placeholder="Que mascota buscas"
 			/>
 		</div>
@@ -22,7 +21,7 @@
 				id="speciesInput"
 				type="text"
 				list="speciesList"
-				[(ngModel)]="selectedSpecies"
+				[(ngModel)]="selectedSpeciesDraft"
 				(ngModelChange)="onSpeciesChange()"
 				placeholder="Especie"
 			/>
@@ -37,7 +36,7 @@
 				id="breedInput"
 				type="text"
 				list="breedList"
-				[(ngModel)]="selectedBreed"
+				[(ngModel)]="selectedBreedDraft"
 				(ngModelChange)="onBreedChange()"
 				placeholder="Raza"
 				[disabled]="breedOptions.length === 0"
@@ -47,7 +46,28 @@
 			</datalist>
 		</div>
 
-		<button type="button" class="btn-clear" (click)="clearFilters()">Limpiar filtros</button>
+		<button type="button" class="icon-btn clear-btn" (click)="clearFilters()" aria-label="Limpiar filtros">
+			<span class="svg-icon" [innerHTML]="sanitizedIcons.ICON_CLEAR"></span>
+		</button>
+
+		<button
+			type="button"
+			class="icon-btn search-btn"
+			(click)="applySearchFilters()"
+			aria-label="Buscar publicaciones"
+		>
+			<span class="svg-icon" [innerHTML]="sanitizedIcons.ICON_SEARCH"></span>
+		</button>
+
+		<button
+			type="button"
+			class="icon-btn favorite-filter-btn"
+			(click)="toggleFavoritesFilter()"
+			[class.active]="showOnlyFavorites"
+			aria-label="Filtrar favoritos"
+		>
+			<span class="svg-icon" [innerHTML]="showOnlyFavorites ? sanitizedIcons.ICON_HEART_FILLED : sanitizedIcons.ICON_HEART_OUTLINE"></span>
+		</button>
 	</section>
 
 	<div class="form-feedback" *ngIf="errorMessage && !isLightboxOpen">{{ errorMessage }}</div>
@@ -58,6 +78,15 @@
 	<div class="publications-grid" *ngIf="!isLoading && publications.length > 0">
 		<article class="publication-card" *ngFor="let publication of publications">
 			<div class="card-image" (click)="openLightbox(publication)">
+				<button
+					type="button"
+					class="favorite-card-btn"
+					*ngIf="hasSession() && !isPublicationOwner(publication)"
+					(click)="toggleFavoritePublication(publication, $event)"
+					[attr.aria-label]="isFavorite(publication) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+				>
+					<span class="svg-icon" [innerHTML]="isFavorite(publication) ? sanitizedIcons.ICON_HEART_FILLED : sanitizedIcons.ICON_HEART_OUTLINE"></span>
+				</button>
 				<img [src]="getCurrentImage(publication)" (error)="handleImageError($event)" [alt]="publication.title" />
 				<button
 					type="button"
