@@ -1,0 +1,162 @@
+<section class="posts-page">
+  <header class="page-header">
+    <div>
+      <h1>Mis publicaciones</h1>
+      <p>Gestiona tus publicaciones y solicitudes de adopción.</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="goToCreatePublication()">Crear publicación</button>
+  </header>
+
+  <div class="form-feedback" *ngIf="publicationActionError && !isPublicationModalOpen">{{ publicationActionError }}</div>
+  <div class="form-success" *ngIf="publicationActionMessage && !isPublicationModalOpen">{{ publicationActionMessage }}</div>
+
+  <div class="publication-grid" *ngIf="publications.length > 0; else noPublications">
+    <article class="publication-item" *ngFor="let publication of publications">
+      <div class="image-container">
+        <img
+          [src]="getCurrentPublicationImage(publication)"
+          (error)="handleImageError($event)"
+          [alt]="publication.title"
+        />
+
+        <button
+          type="button"
+          class="image-nav prev"
+          *ngIf="(publication.images?.length ?? 0) > 1"
+          (click)="previousPublicationImage(publication)"
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          class="image-nav next"
+          *ngIf="(publication.images?.length ?? 0) > 1"
+          (click)="nextPublicationImage(publication)"
+        >
+          ›
+        </button>
+      </div>
+
+      <div class="publication-content">
+        <div class="publication-title-row">
+          <h3>{{ publication.title }}</h3>
+          <span class="request-badge" *ngIf="(publication.pendingRequestsCount ?? 0) > 0">
+            {{ publication.pendingRequestsCount }}
+          </span>
+        </div>
+        <p class="publication-meta">
+          {{ publication.createdAt | date:'mediumDate' }} · {{ statusLabels[publication.adoptionStatus] }}
+        </p>
+        <p class="publication-description">
+          {{ publication.description || 'Sin descripcion.' }}
+        </p>
+
+        <div class="publication-actions">
+          <button type="button" class="btn-edit-neo" (click)="openPublicationActions(publication)">
+            Gestionar
+          </button>
+          <button type="button" class="btn-delete-neo" (click)="deletePublication(publication.id)">
+            Borrar
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <ng-template #noPublications>
+    <div class="empty-state">
+      Todavía no has creado publicaciones.
+      <button type="button" class="btn-primary inline" (click)="goToCreatePublication()">Crear publicación</button>
+    </div>
+  </ng-template>
+
+  <div class="modal-overlay" *ngIf="isPublicationModalOpen">
+    <div class="modal-card publication-modal" *ngIf="selectedPublication as publication">
+      <header class="modal-header">
+        <h2>{{ publication.title }}</h2>
+        <p>{{ publication.createdAt | date:'medium' }}</p>
+      </header>
+
+      <div class="form-feedback" *ngIf="publicationActionError">{{ publicationActionError }}</div>
+      <div class="form-success" *ngIf="publicationActionMessage">{{ publicationActionMessage }}</div>
+
+      <section *ngIf="publicationModalView === 'menu'" class="modal-menu-view">
+        <p>Elige la acción que quieres realizar sobre esta publicación.</p>
+        <div class="modal-actions single-column">
+          <button type="button" class="btn-save" (click)="openEditPublication()">Editar publicación</button>
+          <button type="button" class="btn-cancel" (click)="openAdoptionRequests()">Ver peticiones de adopción</button>
+          <button type="button" class="btn-delete" (click)="deletePublication(publication.id)">Borrar publicación</button>
+        </div>
+      </section>
+
+      <section *ngIf="publicationModalView === 'edit'" class="modal-edit-view">
+        <form [formGroup]="publicationEditForm" class="neo-form">
+          <label for="editTitle">Nombre de la publicación</label>
+          <input id="editTitle" type="text" formControlName="title" />
+
+          <label for="editDescription">Descripción</label>
+          <textarea id="editDescription" rows="4" formControlName="description"></textarea>
+
+          <label for="editAdoptionStatus">Estado de adopción</label>
+          <select id="editAdoptionStatus" formControlName="adoptionStatus">
+            <option *ngFor="let status of adoptionStatuses" [value]="status">
+              {{ statusLabels[status] }}
+            </option>
+          </select>
+        </form>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="publicationModalView = 'menu'">Volver</button>
+          <button
+            type="button"
+            class="btn-save"
+            (click)="savePublicationChanges()"
+            [disabled]="publicationEditForm.invalid || isSavingPublication"
+          >
+            {{ isSavingPublication ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </div>
+      </section>
+
+      <section *ngIf="publicationModalView === 'requests'" class="modal-requests-view">
+        <div class="requests-loading" *ngIf="isLoadingRequests">Cargando solicitudes...</div>
+
+        <div class="request-list" *ngIf="!isLoadingRequests && adoptionRequests.length > 0">
+          <article
+            class="request-item"
+            *ngFor="let request of adoptionRequests"
+            [class.archived]="request.status === 'ARCHIVED'"
+          >
+            <div class="request-main">
+              <div class="request-header-row">
+                <strong>{{ formatApplicantName(request) }}</strong>
+                <span class="request-status">{{ requestStatusLabels[request.status] }}</span>
+              </div>
+              <p class="request-contact">{{ request.applicant?.contactEmail || request.applicant?.email || 'Sin email' }}</p>
+              <p class="request-contact">Teléfono: {{ getApplicantPhone(request) }}</p>
+              <p class="request-date">{{ request.createdAt | date:'medium' }}</p>
+              <p class="request-message">{{ request.message || 'Sin comentario.' }}</p>
+            </div>
+
+            <div class="request-actions" *ngIf="request.status !== 'ACCEPTED'">
+              <button type="button" class="btn-save" (click)="updateRequestStatus(request.id, 'ACCEPTED')">Aceptar</button>
+              <button type="button" class="btn-cancel" (click)="updateRequestStatus(request.id, 'ARCHIVED')">Archivar</button>
+              <button type="button" class="btn-delete" (click)="deleteRequest(request.id)">Borrar</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoadingRequests && adoptionRequests.length === 0">
+          Esta publicación no tiene solicitudes de adopción todavía.
+        </div>
+
+        <div class="modal-actions single-column">
+          <button type="button" class="btn-cancel" (click)="publicationModalView = 'menu'">Volver</button>
+        </div>
+      </section>
+
+      <div class="modal-actions single-column">
+        <button type="button" class="btn-cancel" (click)="closePublicationModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</section>

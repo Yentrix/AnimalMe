@@ -10,4 +10,5 @@ import com.iax.animalme.domain.model.Comment;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPublicationIdOrderByCreatedAtAsc(Long publicationId);
+    void deleteByPublicationId(Long publicationId);
 }

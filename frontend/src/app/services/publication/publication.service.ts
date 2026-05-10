@@ -21,6 +21,7 @@ export interface PublicationPet {
   description?: string;
   species?: { id?: number; name?: string };
   breed?: { id?: number; name?: string };
+  images?: PublicationImage[];
 }
 
 export interface PublicationImage {
@@ -104,5 +105,10 @@ export class PublicationService {
   deleteAdoptionRequest(publicationId: number, requestId: number, authorId: number): Observable<void> {
     const params = new HttpParams().set('authorId', authorId.toString());
     return this.http.delete<void>(`${this.apiUrl}/${publicationId}/adoption-requests/${requestId}`, { params });
+  }
+
+  deletePublication(publicationId: number, authorId: number): Observable<void> {
+    const params = new HttpParams().set('authorId', authorId.toString());
+    return this.http.delete<void>(`${this.apiUrl}/${publicationId}`, { params });
   }
 }

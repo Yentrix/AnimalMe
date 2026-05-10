@@ -187,6 +187,15 @@ export class HomeComponent implements OnInit {
     return images[safeIndex]?.url || 'assets/placeholder.png';
   }
 
+  setModalImage(index: number): void {
+    this.selectedModalImageIndex = index;
+  }
+
+  getPetImage(pet: PublicationPet): string {
+    const firstImage = pet.images?.[0]?.url;
+    return firstImage && firstImage.trim().length > 0 ? firstImage : 'assets/placeholder.png';
+  }
+
   getPetDetailRows(publication: PublicationSummary): PublicationPet[] {
     return publication.pets ?? [];
   }

@@ -121,6 +121,18 @@
 					</button>
 				</div>
 
+				<div class="modal-image-list" *ngIf="(publication.images?.length ?? 0) > 0">
+					<button
+						type="button"
+						class="thumb-btn"
+						*ngFor="let image of publication.images; let i = index"
+						(click)="setModalImage(i)"
+						[class.active]="i === selectedModalImageIndex"
+					>
+						<img [src]="image.url" (error)="handleImageError($event)" [alt]="publication.title + ' ' + i" />
+					</button>
+				</div>
+
 				<p class="modal-description">{{ publication.description || 'Sin descripcion.' }}</p>
 				<p class="modal-author">Contacto: {{ publication.author?.contactEmail || publication.author?.email || 'Sin email' }}</p>
 
@@ -129,6 +141,7 @@
 					<div class="pet-details-list" *ngIf="getPetDetailRows(publication).length > 0; else noPetDetails">
 						<article class="pet-detail-card" *ngFor="let pet of getPetDetailRows(publication)">
 							<h4>{{ pet.name }}</h4>
+							<img class="pet-fixed-image" [src]="getPetImage(pet)" (error)="handleImageError($event)" [alt]="pet.name" />
 							<p>Especie: {{ pet.species?.name || 'No definida' }}</p>
 							<p>Raza: {{ pet.breed?.name || 'No definida' }}</p>
 							<p>Sexo: {{ pet.sex || 'No definido' }}</p>

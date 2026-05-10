@@ -23,6 +23,7 @@ import com.iax.animalme.domain.model.Pet;
 import com.iax.animalme.domain.model.Publication;
 import com.iax.animalme.domain.model.User;
 import com.iax.animalme.domain.repository.AdoptionRequestRepository;
+import com.iax.animalme.domain.repository.CommentRepository;
 import com.iax.animalme.domain.repository.ImageRepository;
 import com.iax.animalme.domain.repository.PetRepository;
 import com.iax.animalme.domain.repository.PublicationRepository;
@@ -39,16 +40,18 @@ public class PublicationApplicationService {
     private final UserRepository userRepository;
     private final PetRepository petRepository;
     private final AdoptionRequestRepository adoptionRequestRepository;
+    private final CommentRepository commentRepository;
 
     public PublicationApplicationService(PublicationRepository publicationRepository, ImageRepository imageRepository,
             FileStorageService fileStorageService, UserRepository userRepository, PetRepository petRepository,
-            AdoptionRequestRepository adoptionRequestRepository) {
+            AdoptionRequestRepository adoptionRequestRepository, CommentRepository commentRepository) {
         this.publicationRepository = publicationRepository;
         this.imageRepository = imageRepository;
         this.fileStorageService = fileStorageService;
         this.userRepository = userRepository;
         this.petRepository = petRepository;
         this.adoptionRequestRepository = adoptionRequestRepository;
+        this.commentRepository = commentRepository;
     }
 
     @Transactional
@@ -240,6 +243,21 @@ public class PublicationApplicationService {
         }
 
         adoptionRequestRepository.delete(request);
+    }
+
+    @Transactional
+    public void deletePublication(Long publicationId, Long authorId) {
+        Publication publication = publicationRepository.findById(publicationId)
+                .orElseThrow(() -> new IllegalArgumentException("La publicacion no existe"));
+        ensurePublicationAuthor(publication, authorId);
+
+        publication.setPets(new ArrayList<>());
+        publicationRepository.save(publication);
+
+        commentRepository.deleteByPublicationId(publicationId);
+        adoptionRequestRepository.deleteByPublicationId(publicationId);
+        imageRepository.deleteByPublicationId(publicationId);
+        publicationRepository.delete(publication);
     }
 
     private void ensurePublicationAuthor(Publication publication, Long authorId) {

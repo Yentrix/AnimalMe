@@ -5,6 +5,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { PostCreateComponent } from './pages/post-create/post-create.component';
 import { PetManagementComponent } from './pages/pet-create/pet-create.component';
+import { PostsComponent } from './pages/posts/posts.component';
 
 export const routes: Routes = [
     {
@@ -15,7 +16,8 @@ export const routes: Routes = [
             { path: 'auth', component: AuthComponent },
             { path: 'profile', component: ProfileComponent },
             { path: 'pets', component: PetManagementComponent},
-            { path: 'posts', component: PostCreateComponent},
+            { path: 'posts', component: PostsComponent},
+            { path: 'posts/create', component: PostCreateComponent},
             { path: '', redirectTo: 'home', pathMatch: 'full' }
         ]
     }

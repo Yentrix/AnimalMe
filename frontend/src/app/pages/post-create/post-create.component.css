@@ -11,10 +11,31 @@
 	font-weight: 800;
 }
 
+.page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 12px;
+}
+
 .page-header p {
 	margin: 6px 0 0;
 	color: var(--text-primary);
 	opacity: 0.85;
+}
+
+.back-link {
+	border: 1px solid var(--border-color);
+	border-radius: 10px;
+	padding: 8px 10px;
+	text-decoration: none;
+	color: var(--text-primary);
+	font-weight: 700;
+	background: transparent;
+}
+
+.back-link:hover {
+	background: var(--hover-bg);
 }
 
 .content-grid {
@@ -497,6 +518,10 @@
 
 	.page-header h1 {
 		font-size: 24px;
+	}
+
+	.page-header {
+		flex-direction: column;
 	}
 
 	.request-actions,

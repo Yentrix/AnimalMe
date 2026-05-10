@@ -104,6 +104,14 @@ public class PublicationController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{publicationId}")
+    public ResponseEntity<Void> deletePublication(
+            @PathVariable Long publicationId,
+            @RequestParam("authorId") Long authorId) {
+        publicationService.deletePublication(publicationId, authorId);
+        return ResponseEntity.noContent().build();
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Void> handleIllegalArgument() {
         return ResponseEntity.badRequest().build();
