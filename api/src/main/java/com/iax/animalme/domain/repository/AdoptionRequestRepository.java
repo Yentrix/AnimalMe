@@ -5,10 +5,15 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.iax.animalme.domain.enums.RequestStatus;
 import com.iax.animalme.domain.model.AdoptionRequest;
 
 @Repository
 public interface AdoptionRequestRepository extends JpaRepository<AdoptionRequest, Long> {
     List<AdoptionRequest> findByPublicationId(Long publicationId);
+    List<AdoptionRequest> findByPublicationIdOrderByCreatedAtDesc(Long publicationId);
+    List<AdoptionRequest> findByPublicationIdAndStatus(Long publicationId, RequestStatus status);
     List<AdoptionRequest> findByApplicantId(Long applicantId);
+    Long countByPublicationIdAndStatus(Long publicationId, RequestStatus status);
+    boolean existsByPublicationIdAndApplicantIdAndStatus(Long publicationId, Long applicantId, RequestStatus status);
 }

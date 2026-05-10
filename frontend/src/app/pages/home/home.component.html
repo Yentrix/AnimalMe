@@ -1,1 +1,108 @@
-<p>home works!</p>
+<section class="home-page">
+	<header class="page-header">
+		<h1>Publicaciones de adopcion</h1>
+		<p>Explora mascotas en adopcion, revisa sus fotos y enviales una solicitud.</p>
+	</header>
+
+	<div class="form-feedback" *ngIf="errorMessage && !isLightboxOpen">{{ errorMessage }}</div>
+	<div class="form-success" *ngIf="successMessage && !isLightboxOpen">{{ successMessage }}</div>
+
+	<div class="loading" *ngIf="isLoading">Cargando publicaciones...</div>
+
+	<div class="publications-grid" *ngIf="!isLoading && publications.length > 0">
+		<article class="publication-card" *ngFor="let publication of publications">
+			<div class="card-image" (click)="openLightbox(publication)">
+				<img [src]="getCurrentImage(publication)" (error)="handleImageError($event)" [alt]="publication.title" />
+				<button
+					type="button"
+					class="image-nav prev"
+					*ngIf="(publication.images?.length ?? 0) > 1"
+					(click)="$event.stopPropagation(); previousImage(publication)"
+				>
+					‹
+				</button>
+				<button
+					type="button"
+					class="image-nav next"
+					*ngIf="(publication.images?.length ?? 0) > 1"
+					(click)="$event.stopPropagation(); nextImage(publication)"
+				>
+					›
+				</button>
+			</div>
+
+			<div class="card-content">
+				<h3>{{ publication.title }}</h3>
+				<p class="meta">{{ publication.createdAt | date:'mediumDate' }} · {{ adoptionStatusLabel[publication.adoptionStatus] }}</p>
+				<p class="author">Publicado por {{ getAuthorName(publication) }}</p>
+				<p class="description">{{ publication.description || 'Sin descripcion.' }}</p>
+			</div>
+		</article>
+	</div>
+
+	<div class="empty-state" *ngIf="!isLoading && publications.length === 0">
+		No hay publicaciones activas por ahora.
+	</div>
+
+	<div class="modal-overlay" *ngIf="isLightboxOpen && selectedPublication as publication">
+		<div class="modal-card">
+			<header class="modal-header">
+				<h2>{{ publication.title }}</h2>
+				<p>{{ publication.createdAt | date:'medium' }}</p>
+			</header>
+
+			<div class="modal-image-wrapper">
+				<img [src]="getModalImage()" (error)="handleImageError($event)" [alt]="publication.title" />
+				<button
+					type="button"
+					class="image-nav prev"
+					*ngIf="(publication.images?.length ?? 0) > 1"
+					(click)="previousModalImage()"
+				>
+					‹
+				</button>
+				<button
+					type="button"
+					class="image-nav next"
+					*ngIf="(publication.images?.length ?? 0) > 1"
+					(click)="nextModalImage()"
+				>
+					›
+				</button>
+			</div>
+
+			<p class="modal-description">{{ publication.description || 'Sin descripcion.' }}</p>
+			<p class="modal-author">Contacto: {{ publication.author?.contactEmail || publication.author?.email || 'Sin email' }}</p>
+
+			<div class="form-feedback" *ngIf="errorMessage">{{ errorMessage }}</div>
+			<div class="form-success" *ngIf="successMessage">{{ successMessage }}</div>
+
+			<section class="request-panel" *ngIf="!isPublicationOwner(publication)">
+				<ng-container *ngIf="hasSession(); else loginNeeded">
+					<label for="requestMessage">Mensaje para solicitud de adopcion (opcional)</label>
+					<textarea
+						id="requestMessage"
+						rows="4"
+						[(ngModel)]="requestMessage"
+						placeholder="Cuenta por que quieres adoptar esta mascota"
+					></textarea>
+					<button type="button" class="btn-save" (click)="submitAdoptionRequest()" [disabled]="isSubmittingRequest">
+						{{ isSubmittingRequest ? 'Enviando...' : 'Enviar solicitud' }}
+					</button>
+				</ng-container>
+			</section>
+
+			<p class="owner-note" *ngIf="isPublicationOwner(publication)">
+				Esta es tu publicacion. Puedes gestionar solicitudes desde el apartado Publicaciones.
+			</p>
+
+			<ng-template #loginNeeded>
+				<p class="owner-note">Inicia sesion para enviar una solicitud de adopcion.</p>
+			</ng-template>
+
+			<div class="modal-actions">
+				<button type="button" class="btn-cancel" (click)="closeLightbox()">Cerrar</button>
+			</div>
+		</div>
+	</div>
+</section>

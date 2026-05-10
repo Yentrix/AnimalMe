@@ -19,6 +19,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Entity
@@ -57,4 +58,11 @@ public class Publication {
     @OneToMany(mappedBy = "publication")
     @JsonIgnoreProperties("publication")
     private List<Image> images;
+
+    @OneToMany(mappedBy = "publication")
+    @JsonIgnoreProperties({"publication"})
+    private List<AdoptionRequest> adoptionRequests;
+
+    @Transient
+    private Long pendingRequestsCount;
 }

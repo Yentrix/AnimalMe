@@ -2,6 +2,7 @@ package com.iax.animalme.domain.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.iax.animalme.domain.enums.RequestStatus;
 
 import jakarta.persistence.Column;
@@ -32,9 +33,11 @@ public class AdoptionRequest {
 
     @ManyToOne
     @JoinColumn(name = "applicant_id")
+    @JsonIgnoreProperties({"password", "pets", "favoritePublications"})
     private User applicant;
 
     @ManyToOne
     @JoinColumn(name = "publication_id")
+    @JsonIgnoreProperties({"adoptionRequests", "comments", "images", "pets"})
     private Publication publication;
 }
