@@ -76,8 +76,8 @@
 	<div class="loading" *ngIf="isLoading">Cargando publicaciones...</div>
 
 	<div class="publications-grid" *ngIf="!isLoading && publications.length > 0">
-		<article class="publication-card" *ngFor="let publication of publications">
-			<div class="card-image" (click)="openLightbox(publication)">
+		<article class="publication-card" *ngFor="let publication of publications" (click)="openLightbox(publication)">
+			<div class="card-image">
 				<button
 					type="button"
 					class="favorite-card-btn"
