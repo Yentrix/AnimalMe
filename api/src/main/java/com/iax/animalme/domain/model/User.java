@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.iax.animalme.domain.enums.UserRole;
 import com.iax.animalme.domain.enums.UserStatus;
 
@@ -45,7 +46,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    @JsonIgnore // NUNCA enviar la contraseña al frontend 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // Se acepta en requests, pero nunca se devuelve al frontend
     private String password;
 
     private String contactPhone;
