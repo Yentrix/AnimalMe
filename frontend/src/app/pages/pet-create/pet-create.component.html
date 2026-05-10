@@ -20,9 +20,6 @@
                 <div class="card-info">
                     <div class="title-row">
                         <h3>{{ pet.name }}</h3>
-                        <span class="status-tag-inline" [ngClass]="pet.adoptionStatus">
-                            {{ pet.adoptionStatus }}
-                        </span>
                     </div>
                     <p class="breed-text">{{ pet.species?.name }} • {{ pet.breed?.name }}</p>
                     <p class="description-text">{{ pet.description }}</p>
@@ -85,11 +82,6 @@
                         <option value="" disabled selected>Sexo</option>
                         <option value="Macho">Macho ♂</option>
                         <option value="Hembra">Hembra ♀</option>
-                    </select>
-                    <select formControlName="adoptionStatus">
-                        <option *ngFor="let status of adoptionStatuses" [value]="status">
-                            {{ status }}
-                        </option>
                     </select>
                 </div>
 

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.iax.animalme.domain.enums.AdoptionStatus;
 import com.iax.animalme.domain.enums.PublicationStatus;
 
 import jakarta.persistence.Entity;
@@ -28,11 +29,15 @@ public class Publication {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String title;
     private String description;
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private PublicationStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private AdoptionStatus adoptionStatus;
 
     @ManyToOne
     @JoinColumn(name = "author_id")
@@ -48,4 +53,8 @@ public class Publication {
     @OneToMany(mappedBy = "publication")
     @JsonIgnoreProperties("publication") // Los comentarios no deben recargar la publicación [cite: 35]
     private List<Comment> comments;
+
+    @OneToMany(mappedBy = "publication")
+    @JsonIgnoreProperties("publication")
+    private List<Image> images;
 }

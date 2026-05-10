@@ -1,16 +1,17 @@
 package com.iax.animalme.application.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.iax.animalme.domain.enums.AdoptionStatus;
 import com.iax.animalme.domain.model.Image;
 import com.iax.animalme.domain.model.Pet;
 import com.iax.animalme.domain.model.User;
 import com.iax.animalme.domain.repository.ImageRepository;
 import com.iax.animalme.domain.repository.PetRepository;
 import com.iax.animalme.infrastructure.service.FileStorageService;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Service
 public class PetApplicationService {
@@ -33,6 +34,9 @@ public class PetApplicationService {
     public Pet createPet(Pet pet, Long ownerId, MultipartFile imageFile) throws Exception {
         User owner = userService.findById(ownerId);
         pet.setOwner(owner);
+        if (pet.getAdoptionStatus() == null) {
+            pet.setAdoptionStatus(AdoptionStatus.AVAILABLE);
+        }
 
         Pet savedPet = petRepository.save(pet);
 
@@ -64,7 +68,7 @@ public class PetApplicationService {
                 .sex(petDetails.getSex())
                 .sizeCm(petDetails.getSizeCm())
                 .description(petDetails.getDescription())
-                .adoptionStatus(petDetails.getAdoptionStatus())
+                .adoptionStatus(petDetails.getAdoptionStatus() != null ? petDetails.getAdoptionStatus() : oldPet.getAdoptionStatus())
                 .species(petDetails.getSpecies())
                 .breed(petDetails.getBreed())
                 .build();

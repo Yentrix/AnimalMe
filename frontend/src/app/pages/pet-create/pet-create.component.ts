@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { AdoptionStatus } from '../../enums/adoption-status';
 import { PetService } from '../../services/pet/pet.service';
 
 @Component({
@@ -15,7 +14,6 @@ export class PetManagementComponent implements OnInit {
   viewMode: 'list' | 'kanban' = 'kanban';
   imagePreview: string | null = null;
   pets: any[] = [];
-  adoptionStatuses = Object.values(AdoptionStatus); // 
   petForm!: FormGroup;
   selectedFile: File | null = null;
   showModal = false;
@@ -37,7 +35,6 @@ export class PetManagementComponent implements OnInit {
   initForm() {
     this.petForm = this.fb.group({
       name: ['', [Validators.required]],
-      adoptionStatus: [AdoptionStatus.AVAILABLE, [Validators.required]],
       // Los demás son opcionales (sin Validators.required)
       age: [null],
       sex: [''],
@@ -89,7 +86,6 @@ export class PetManagementComponent implements OnInit {
       sex: pet.sex,
       sizeCm: pet.sizeCm,
       description: pet.description,
-      adoptionStatus: pet.adoptionStatus,
       speciesName: pet.species?.name,
       breedName: pet.breed?.name
     });
@@ -117,10 +113,6 @@ export class PetManagementComponent implements OnInit {
     this.filteredBreeds = []; // Cerramos la lista
   }
 
-  getPetsByStatus(status: string) {
-    return this.pets.filter(p => p.adoptionStatus === status);
-  }
-
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -143,8 +135,7 @@ export class PetManagementComponent implements OnInit {
       name: this.petForm.get('name')?.value,
       sex: this.petForm.get('sex')?.value,
       sizeCm: this.petForm.get('sizeCm')?.value,
-      description: this.petForm.get('description')?.value,
-      adoptionStatus: this.petForm.get('adoptionStatus')?.value
+      description: this.petForm.get('description')?.value
     };
 
     formData.append('pet', JSON.stringify(petData));

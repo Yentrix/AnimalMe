@@ -1,18 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-import { PetCreateComponent } from './pet-create.component';
+import { PetManagementComponent } from './pet-create.component';
 
-describe('PetCreateComponent', () => {
-  let component: PetCreateComponent;
-  let fixture: ComponentFixture<PetCreateComponent>;
+describe('PetManagementComponent', () => {
+  let component: PetManagementComponent;
+  let fixture: ComponentFixture<PetManagementComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PetCreateComponent]
+      imports: [PetManagementComponent, HttpClientTestingModule]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(PetCreateComponent);
+    fixture = TestBed.createComponent(PetManagementComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
