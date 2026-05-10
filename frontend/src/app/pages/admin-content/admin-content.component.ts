@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { AdminPet, AdminService } from '../../services/admin/admin.service';
 import { PublicationSummary } from '../../services/publication/publication.service';
 
 @Component({
   selector: 'app-admin-content',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-content.component.html',
   styleUrl: './admin-content.component.css'
 })
@@ -14,6 +15,8 @@ export class AdminContentComponent implements OnInit {
   tab: 'publications' | 'pets' = 'publications';
   publications: PublicationSummary[] = [];
   pets: AdminPet[] = [];
+  publicationQuery = '';
+  petQuery = '';
   error = '';
 
   constructor(private adminService: AdminService) { }
@@ -29,7 +32,7 @@ export class AdminContentComponent implements OnInit {
       return;
     }
 
-    this.adminService.listPublications(adminId).subscribe({
+    this.adminService.listPublications(adminId, this.publicationQuery).subscribe({
       next: data => this.publications = data,
       error: () => this.error = 'No se pudieron cargar las publicaciones.'
     });
@@ -41,10 +44,19 @@ export class AdminContentComponent implements OnInit {
       return;
     }
 
-    this.adminService.listPets(adminId).subscribe({
+    this.adminService.listPets(adminId, this.petQuery).subscribe({
       next: data => this.pets = data,
       error: () => this.error = 'No se pudieron cargar las mascotas.'
     });
+  }
+
+  searchCurrentTab(): void {
+    if (this.tab === 'publications') {
+      this.loadPublications();
+      return;
+    }
+
+    this.loadPets();
   }
 
   deletePublication(publicationId: number): void {

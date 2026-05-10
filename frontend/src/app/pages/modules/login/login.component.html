@@ -10,3 +10,11 @@
   <p *ngIf="errorMessage" class="error-text">{{ errorMessage }}</p>
   <button type="submit" class="submit-btn">Entrar</button>
 </form>
+
+<div *ngIf="showBanModal" class="ban-modal-backdrop" (click)="closeBanModal()">
+  <div class="ban-modal-card" (click)="$event.stopPropagation()">
+    <h3>Cuenta bloqueada</h3>
+    <p>{{ banModalMessage }}</p>
+    <button type="button" class="submit-btn" (click)="closeBanModal()">Entendido</button>
+  </div>
+</div>

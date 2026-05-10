@@ -74,10 +74,21 @@ public class AdminApplicationService {
             user.setStatus(UserStatus.BANNED_PERMANENT);
             user.setBannedUntil(null);
         } else {
-            Integer requestedHours = request == null ? null : request.getHours();
-            int hours = (requestedHours != null && requestedHours > 0) ? requestedHours : 24;
+            Integer days = request == null ? null : request.getDays();
+            Integer hours = request == null ? null : request.getHours();
+            Integer minutes = request == null ? null : request.getMinutes();
+
+            long totalMinutes = 0;
+            totalMinutes += (days != null && days > 0) ? days.longValue() * 24L * 60L : 0L;
+            totalMinutes += (hours != null && hours > 0) ? hours.longValue() * 60L : 0L;
+            totalMinutes += (minutes != null && minutes > 0) ? minutes.longValue() : 0L;
+
+            if (totalMinutes <= 0) {
+                totalMinutes = 24L * 60L;
+            }
+
             user.setStatus(UserStatus.BANNED_TEMPORARY);
-            user.setBannedUntil(LocalDateTime.now().plusHours(hours));
+            user.setBannedUntil(LocalDateTime.now().plusMinutes(totalMinutes));
         }
 
         return userRepository.save(user);
@@ -94,9 +105,19 @@ public class AdminApplicationService {
         return userRepository.save(user);
     }
 
-    public List<Publication> listPublications(Long adminId) {
+    public List<Publication> listPublications(Long adminId, String query) {
         validateAdmin(adminId);
-        return publicationRepository.findAll();
+        String needle = query == null ? "" : query.trim().toLowerCase();
+        if (needle.isBlank()) {
+            return publicationRepository.findAll();
+        }
+
+        return publicationRepository.findAll().stream()
+                .filter(publication -> {
+                    String title = publication.getTitle() == null ? "" : publication.getTitle().toLowerCase();
+                    return title.contains(needle);
+                })
+                .toList();
     }
 
     @Transactional
@@ -105,9 +126,19 @@ public class AdminApplicationService {
         publicationApplicationService.deletePublicationAsAdmin(publicationId);
     }
 
-    public List<Pet> listPets(Long adminId) {
+    public List<Pet> listPets(Long adminId, String query) {
         validateAdmin(adminId);
-        return petRepository.findAll();
+        String needle = query == null ? "" : query.trim().toLowerCase();
+        if (needle.isBlank()) {
+            return petRepository.findAll();
+        }
+
+        return petRepository.findAll().stream()
+                .filter(pet -> {
+                    String name = pet.getName() == null ? "" : pet.getName().toLowerCase();
+                    return name.contains(needle);
+                })
+                .toList();
     }
 
     @Transactional

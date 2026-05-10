@@ -42,7 +42,31 @@ public class AuthApplicationService {
 
         if (user.getStatus() == UserStatus.BANNED_TEMPORARY) {
             if (user.getBannedUntil() != null && user.getBannedUntil().isAfter(LocalDateTime.now())) {
-                throw new IllegalArgumentException("Tu cuenta esta baneada temporalmente");
+                LocalDateTime now = LocalDateTime.now();
+                long totalMinutes = java.time.Duration.between(now, user.getBannedUntil()).toMinutes();
+                long days = totalMinutes / (24 * 60);
+                long hours = (totalMinutes % (24 * 60)) / 60;
+                long minutes = totalMinutes % 60;
+
+                StringBuilder remainingTime = new StringBuilder();
+                if (days > 0) {
+                    remainingTime.append(days).append(days == 1 ? " dia" : " dias");
+                }
+                if (hours > 0) {
+                    if (remainingTime.length() > 0) {
+                        remainingTime.append(", ");
+                    }
+                    remainingTime.append(hours).append(hours == 1 ? " hora" : " horas");
+                }
+                if (minutes > 0 || remainingTime.length() == 0) {
+                    if (remainingTime.length() > 0) {
+                        remainingTime.append(" y ");
+                    }
+                    remainingTime.append(minutes).append(minutes == 1 ? " minuto" : " minutos");
+                }
+
+                throw new IllegalArgumentException(
+                        "Tu cuenta esta baneada temporalmente. Tiempo restante: " + remainingTime + ".");
             }
 
             user.setStatus(UserStatus.ACTIVE);

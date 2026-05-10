@@ -11,6 +11,12 @@ export const svgIcons = {
         <path d="M18 6 6 18"></path>
         <path d="m6 6 12 12"></path>
     </svg>`,
+  ICON_EDIT_PENCIL: `
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"></path>
+        <path d="m16.5 3.5 4 4L8 20l-5 1 1-5 12.5-12.5Z"></path>
+    </svg>`,
   ICON_HEART_OUTLINE: `
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

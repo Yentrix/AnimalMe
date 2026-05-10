@@ -131,4 +131,15 @@
       </div>
     </div>
   </div>
+
+  <div class="modal-overlay" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()">
+    <div class="modal-card confirm-delete-modal" (click)="$event.stopPropagation()">
+      <h3>¿Borrar publicación?</h3>
+      <p>Esta acción no se puede deshacer.</p>
+      <div class="modal-actions single-column">
+        <button type="button" class="btn-delete" (click)="confirmDeletePublication()">Sí, borrar</button>
+        <button type="button" class="btn-cancel" (click)="closeDeleteModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
 </section>

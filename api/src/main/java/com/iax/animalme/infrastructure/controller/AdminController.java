@@ -54,8 +54,10 @@ public class AdminController {
     }
 
     @GetMapping("/publications")
-    public ResponseEntity<List<Publication>> listPublications(@RequestParam("adminId") Long adminId) {
-        return ResponseEntity.ok(adminApplicationService.listPublications(adminId));
+    public ResponseEntity<List<Publication>> listPublications(
+            @RequestParam("adminId") Long adminId,
+            @RequestParam(value = "query", required = false) String query) {
+        return ResponseEntity.ok(adminApplicationService.listPublications(adminId, query));
     }
 
     @DeleteMapping("/publications/{publicationId}")
@@ -67,8 +69,10 @@ public class AdminController {
     }
 
     @GetMapping("/pets")
-    public ResponseEntity<List<Pet>> listPets(@RequestParam("adminId") Long adminId) {
-        return ResponseEntity.ok(adminApplicationService.listPets(adminId));
+    public ResponseEntity<List<Pet>> listPets(
+            @RequestParam("adminId") Long adminId,
+            @RequestParam(value = "query", required = false) String query) {
+        return ResponseEntity.ok(adminApplicationService.listPets(adminId, query));
     }
 
     @DeleteMapping("/pets/{petId}")

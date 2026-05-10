@@ -30,6 +30,8 @@ export class PostsComponent implements OnInit {
   isLoadingRequests = false;
   publicationActionMessage = '';
   publicationActionError = '';
+  isDeleteModalOpen = false;
+  publicationToDeleteId: number | null = null;
 
   readonly statusLabels: Record<'AVAILABLE' | 'URGENT' | 'ADOPTED', string> = {
     AVAILABLE: 'Se puede adoptar',
@@ -199,11 +201,8 @@ export class PostsComponent implements OnInit {
       .subscribe({
         next: () => {
           if (status === 'ACCEPTED') {
-            const shouldDelete = window.confirm('La solicitud fue aceptada. ¿Quieres borrar la publicación ahora?');
-            if (shouldDelete) {
-              this.deletePublication(this.selectedPublication!.id, true);
-              return;
-            }
+            this.openDeleteModal(this.selectedPublication!.id);
+            return;
           }
 
           this.publicationActionMessage = 'Solicitud actualizada correctamente.';
@@ -244,18 +243,32 @@ export class PostsComponent implements OnInit {
       });
   }
 
-  deletePublication(publicationId: number, fromAcceptedFlow = false): void {
+  deletePublication(publicationId: number): void {
+    this.openDeleteModal(publicationId);
+  }
+
+  openDeleteModal(publicationId: number): void {
+    this.publicationToDeleteId = publicationId;
+    this.isDeleteModalOpen = true;
+  }
+
+  closeDeleteModal(): void {
+    this.isDeleteModalOpen = false;
+    this.publicationToDeleteId = null;
+  }
+
+  confirmDeletePublication(): void {
+    if (!this.publicationToDeleteId) {
+      return;
+    }
+
+    const publicationId = this.publicationToDeleteId;
+    this.closeDeleteModal();
+
     const userId = this.getCurrentUserId();
     if (!userId) {
       this.publicationActionError = 'No se encontro el usuario autenticado.';
       return;
-    }
-
-    if (!fromAcceptedFlow) {
-      const confirmed = window.confirm('¿Seguro que quieres borrar esta publicación? Esta acción no se puede deshacer.');
-      if (!confirmed) {
-        return;
-      }
     }
 
     this.publicationService.deletePublication(publicationId, userId).subscribe({

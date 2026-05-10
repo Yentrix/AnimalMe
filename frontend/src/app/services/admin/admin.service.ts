@@ -38,9 +38,19 @@ export class AdminService {
     return this.http.get<AdminUser[]>(`${this.apiUrl}/users`, { params });
   }
 
-  banUser(adminId: number, userId: number, mode: 'TEMPORARY' | 'PERMANENT', hours?: number): Observable<AdminUser> {
+  banUser(
+    adminId: number,
+    userId: number,
+    mode: 'TEMPORARY' | 'PERMANENT',
+    duration?: { days: number; hours: number; minutes: number }
+  ): Observable<AdminUser> {
     const params = new HttpParams().set('adminId', adminId.toString());
-    return this.http.put<AdminUser>(`${this.apiUrl}/users/${userId}/ban`, { mode, hours }, { params });
+    return this.http.put<AdminUser>(`${this.apiUrl}/users/${userId}/ban`, {
+      mode,
+      days: duration?.days,
+      hours: duration?.hours,
+      minutes: duration?.minutes
+    }, { params });
   }
 
   unbanUser(adminId: number, userId: number): Observable<AdminUser> {
@@ -48,8 +58,11 @@ export class AdminService {
     return this.http.put<AdminUser>(`${this.apiUrl}/users/${userId}/unban`, {}, { params });
   }
 
-  listPublications(adminId: number): Observable<PublicationSummary[]> {
-    const params = new HttpParams().set('adminId', adminId.toString());
+  listPublications(adminId: number, query = ''): Observable<PublicationSummary[]> {
+    let params = new HttpParams().set('adminId', adminId.toString());
+    if (query.trim().length > 0) {
+      params = params.set('query', query.trim());
+    }
     return this.http.get<PublicationSummary[]>(`${this.apiUrl}/publications`, { params });
   }
 
@@ -58,8 +71,11 @@ export class AdminService {
     return this.http.delete<void>(`${this.apiUrl}/publications/${publicationId}`, { params });
   }
 
-  listPets(adminId: number): Observable<AdminPet[]> {
-    const params = new HttpParams().set('adminId', adminId.toString());
+  listPets(adminId: number, query = ''): Observable<AdminPet[]> {
+    let params = new HttpParams().set('adminId', adminId.toString());
+    if (query.trim().length > 0) {
+      params = params.set('query', query.trim());
+    }
     return this.http.get<AdminPet[]>(`${this.apiUrl}/pets`, { params });
   }
 

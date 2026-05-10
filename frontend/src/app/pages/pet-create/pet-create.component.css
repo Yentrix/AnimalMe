@@ -131,16 +131,25 @@
 
 .btn-edit-neo {
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 8px 10px;
+    border-radius: 999px;
+    width: 40px;
+    height: 40px;
     font-weight: 700;
     background: transparent;
     color: var(--text-primary);
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-edit-neo:hover {
     background: var(--hover-bg);
+}
+
+.icon-svg {
+    display: inline-flex;
+    line-height: 0;
 }
 
 .modal-overlay {

@@ -2,7 +2,13 @@
   <h1>Notificaciones de administrador</h1>
 
   <div class="row">
-    <label><input type="checkbox" [(ngModel)]="sendToAll" /> Enviar a todos</label>
+    <label class="send-all-toggle">
+      <input type="checkbox" [(ngModel)]="sendToAll" />
+      <span class="switch-track">
+        <span class="switch-thumb"></span>
+      </span>
+      <span class="toggle-label">Enviar a todos</span>
+    </label>
   </div>
 
   <div class="form-grid">

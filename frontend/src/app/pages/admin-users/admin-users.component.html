@@ -30,3 +30,32 @@
     </article>
   </div>
 </section>
+
+<div *ngIf="showBanModal" class="modal-backdrop" (click)="closeBanModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <h3>Configurar baneo temporal</h3>
+    <p *ngIf="selectedUserForBan">
+      Usuario: {{ selectedUserForBan.firstName }} {{ selectedUserForBan.lastName }} ({{ selectedUserForBan.email }})
+    </p>
+
+    <div class="ban-grid">
+      <label>
+        Dias
+        <input type="number" min="0" [(ngModel)]="banDuration.days" />
+      </label>
+      <label>
+        Horas
+        <input type="number" min="0" max="23" [(ngModel)]="banDuration.hours" />
+      </label>
+      <label>
+        Minutos
+        <input type="number" min="0" max="59" [(ngModel)]="banDuration.minutes" />
+      </label>
+    </div>
+
+    <div class="modal-actions">
+      <button class="cancel-btn" type="button" (click)="closeBanModal()">Cancelar</button>
+      <button class="confirm-btn" type="button" (click)="confirmTemporaryBan()">Aplicar baneo</button>
+    </div>
+  </div>
+</div>

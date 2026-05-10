@@ -16,13 +16,45 @@ export class LoginComponent {
 
   credentials = { email: '', password: '' };
   errorMessage = '';
+  showBanModal = false;
+  banModalMessage = '';
 
   constructor(private authService: AuthService, private router: Router) { }
 
   onLogin() {
+    this.errorMessage = '';
     this.authService.login(this.credentials).subscribe({
       next: () => this.router.navigate(['/home']),
-      error: (err) => this.errorMessage = 'Credenciales incorrectas'
+      error: (err) => {
+        const errorMessage = this.extractErrorMessage(err).toLowerCase();
+        if (errorMessage.includes('baneada')) {
+          this.banModalMessage = this.extractErrorMessage(err);
+          this.showBanModal = true;
+          return;
+        }
+
+        this.errorMessage = 'Credenciales incorrectas';
+      }
     });
+  }
+
+  closeBanModal(): void {
+    this.showBanModal = false;
+  }
+
+  private extractErrorMessage(err: any): string {
+    if (typeof err?.error === 'string') {
+      return err.error;
+    }
+
+    if (typeof err?.error?.message === 'string') {
+      return err.error.message;
+    }
+
+    if (typeof err?.message === 'string') {
+      return err.message;
+    }
+
+    return 'Tu cuenta esta baneada temporalmente.';
   }
 }

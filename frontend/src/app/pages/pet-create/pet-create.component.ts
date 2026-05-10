@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PetService } from '../../services/pet/pet.service';
 import { PublicationService } from '../../services/publication/publication.service';
+import { svgIcons } from '../../icons/svg-icons';
 
 @Component({
   selector: 'app-pet-create',
@@ -25,13 +27,17 @@ export class PetManagementComponent implements OnInit {
   allSpecies: any[] = [];
   allBreeds: any[] = [];
   petsInPublication = new Set<number>();
+  iconPencil: SafeHtml;
 
 
   constructor(
     private fb: FormBuilder,
     private petService: PetService,
-    private publicationService: PublicationService
-  ) { }
+    private publicationService: PublicationService,
+    private sanitizer: DomSanitizer
+  ) {
+    this.iconPencil = this.sanitizer.bypassSecurityTrustHtml(svgIcons.ICON_EDIT_PENCIL);
+  }
 
   ngOnInit(): void {
     this.initForm();

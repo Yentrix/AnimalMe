@@ -10,6 +10,15 @@
   <p class="error" *ngIf="error">{{ error }}</p>
 
   <div class="list" *ngIf="tab === 'publications'">
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="publicationQuery"
+        placeholder="Buscar publicaciones por nombre"
+      />
+      <button type="button" (click)="searchCurrentTab()">Buscar</button>
+    </div>
+
     <article class="card" *ngFor="let publication of publications">
       <div>
         <h3>{{ publication.title }}</h3>
@@ -20,6 +29,15 @@
   </div>
 
   <div class="list" *ngIf="tab === 'pets'">
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="petQuery"
+        placeholder="Buscar mascotas por nombre"
+      />
+      <button type="button" (click)="searchCurrentTab()">Buscar</button>
+    </div>
+
     <article class="card" *ngFor="let pet of pets">
       <div>
         <h3>{{ pet.name }}</h3>

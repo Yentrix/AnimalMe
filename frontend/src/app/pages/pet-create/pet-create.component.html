@@ -31,7 +31,9 @@
                         <span class="detail-badge">{{ pet.sex }}</span>
                         <span class="detail-badge" *ngIf="pet.sizeCm">{{ pet.sizeCm }}cm</span>
                     </div>
-                    <button class="btn-edit-neo" (click)="editPet(pet)">✏️ Editar</button>
+                    <button class="btn-edit-neo" type="button" (click)="editPet(pet)" aria-label="Editar mascota">
+                        <span class="icon-svg" [innerHTML]="iconPencil"></span>
+                    </button>
                 </div>
             </div>
         </div>

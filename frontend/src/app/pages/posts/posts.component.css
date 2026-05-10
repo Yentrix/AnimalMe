@@ -218,6 +218,15 @@
   opacity: 0.8;
 }
 
+.confirm-delete-modal {
+  max-width: 420px;
+}
+
+.confirm-delete-modal h3,
+.confirm-delete-modal p {
+  margin: 0;
+}
+
 .modal-menu-view p {
   margin: 0 0 12px;
 }

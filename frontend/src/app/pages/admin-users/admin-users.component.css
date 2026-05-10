@@ -14,3 +14,84 @@
 .btn-ok { background: #64b889; color: #103624; }
 .error { color: #d12f2f; }
 .state { opacity: 0.8; }
+
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	z-index: 2200;
+}
+
+.modal-card {
+	width: 100%;
+	max-width: 460px;
+	border: 1px solid var(--border-color);
+	border-radius: 14px;
+	padding: 16px;
+	background: var(--bg-secondary);
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.modal-card h3,
+.modal-card p {
+	margin: 0;
+}
+
+.ban-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.ban-grid label {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.ban-grid input {
+	border: 1px solid var(--input-border);
+	border-radius: 8px;
+	padding: 8px;
+	background: var(--input-bg);
+	color: var(--text-primary);
+}
+
+.modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.cancel-btn,
+.confirm-btn {
+	border-radius: 8px;
+	border: 1px solid var(--border-color);
+	padding: 8px 12px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.cancel-btn {
+	background: transparent;
+	color: var(--text-primary);
+}
+
+.confirm-btn {
+	background: var(--btn-primary-bg);
+	color: #fff;
+}
+
+@media (max-width: 640px) {
+	.ban-grid {
+		grid-template-columns: 1fr;
+	}
+}

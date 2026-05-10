@@ -15,6 +15,13 @@ export class AdminUsersComponent implements OnInit {
   query = '';
   loading = false;
   error = '';
+  showBanModal = false;
+  selectedUserForBan: AdminUser | null = null;
+  banDuration = {
+    days: 0,
+    hours: 0,
+    minutes: 0
+  };
 
   constructor(private adminService: AdminService) { }
 
@@ -45,7 +52,9 @@ export class AdminUsersComponent implements OnInit {
   }
 
   banTemporary(user: AdminUser): void {
-    this.ban(user, 'TEMPORARY');
+    this.selectedUserForBan = user;
+    this.banDuration = { days: 0, hours: 24, minutes: 0 };
+    this.showBanModal = true;
   }
 
   banPermanent(user: AdminUser): void {
@@ -70,12 +79,32 @@ export class AdminUsersComponent implements OnInit {
       return;
     }
 
-    const hours = mode === 'TEMPORARY' ? 72 : undefined;
+    const duration = mode === 'TEMPORARY' ? this.banDuration : undefined;
 
-    this.adminService.banUser(adminId, user.id, mode, hours).subscribe({
+    this.adminService.banUser(adminId, user.id, mode, duration).subscribe({
       next: () => this.searchUsers(),
       error: () => this.error = 'No se pudo aplicar el baneo.'
     });
+  }
+
+  confirmTemporaryBan(): void {
+    if (!this.selectedUserForBan) {
+      return;
+    }
+
+    const totalMinutes = this.banDuration.days * 24 * 60 + this.banDuration.hours * 60 + this.banDuration.minutes;
+    if (totalMinutes <= 0) {
+      this.error = 'Debes configurar una duracion mayor a 0 para el baneo temporal.';
+      return;
+    }
+
+    this.ban(this.selectedUserForBan, 'TEMPORARY');
+    this.closeBanModal();
+  }
+
+  closeBanModal(): void {
+    this.showBanModal = false;
+    this.selectedUserForBan = null;
   }
 
   formatStatus(user: AdminUser): string {
