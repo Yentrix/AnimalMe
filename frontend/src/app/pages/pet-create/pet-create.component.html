@@ -28,6 +28,7 @@
 
                 <div class="card-footer">
                     <div class="badges-row">
+                        <span class="detail-badge" *ngIf="pet.age != null">{{ pet.age }} años</span>
                         <span class="detail-badge">{{ pet.sex }}</span>
                         <span class="detail-badge" *ngIf="pet.sizeCm">{{ pet.sizeCm }}cm</span>
                     </div>

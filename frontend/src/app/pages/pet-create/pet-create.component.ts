@@ -111,6 +111,7 @@ export class PetManagementComponent implements OnInit {
     // Rellenamos el formulario con los datos actuales
     this.petForm.patchValue({
       name: pet.name,
+      age: pet.age,
       sex: pet.sex,
       sizeCm: pet.sizeCm,
       description: pet.description,
@@ -158,11 +159,15 @@ export class PetManagementComponent implements OnInit {
   savePet() {
     if (this.petForm.invalid) return;
 
+    const ageValue = this.petForm.get('age')?.value;
+    const sizeValue = this.petForm.get('sizeCm')?.value;
+
     const formData = new FormData();
     const petData = {
       name: this.petForm.get('name')?.value,
+      age: ageValue === '' || ageValue == null ? null : Number(ageValue),
       sex: this.petForm.get('sex')?.value,
-      sizeCm: this.petForm.get('sizeCm')?.value,
+      sizeCm: sizeValue === '' || sizeValue == null ? null : Number(sizeValue),
       description: this.petForm.get('description')?.value
     };
 

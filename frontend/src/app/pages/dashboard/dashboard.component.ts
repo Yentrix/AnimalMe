@@ -1,8 +1,11 @@
 import {
   AfterViewInit,
   Component,
+  ElementRef,
+  HostListener,
   Inject,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 
 import {
@@ -48,6 +51,7 @@ interface SidebarItem {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
+  @ViewChild('notificationWrapper') notificationWrapper?: ElementRef<HTMLElement>;
   user$: Observable<any | null>;
   SidebarSectionEnum = SidebarSection;
   currentSection: SidebarSection = SidebarSection.ROOT;
@@ -203,6 +207,24 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   toggleMobileSidebar() {
     this.isMobileSidebarOpen = !this.isMobileSidebarOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isNotificationPanelOpen) {
+      return;
+    }
+
+    const wrapper = this.notificationWrapper?.nativeElement;
+    const target = event.target as Node | null;
+
+    if (!wrapper || !target) {
+      return;
+    }
+
+    if (!wrapper.contains(target)) {
+      this.isNotificationPanelOpen = false;
+    }
   }
 
   private loadNotifications(userId: number): void {
