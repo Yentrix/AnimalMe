@@ -4,27 +4,27 @@
 		<p>Explora mascotas en adopcion, revisa sus fotos y enviales una solicitud.</p>
 	</header>
 
-	<section class="filters-card">
-		<div class="filter-field">
-			<label for="petNameSearch">Buscar por nombre de mascota</label>
+	<section class="filters-card" role="search" aria-label="Filtros de publicaciones">
+		<div class="filter-field main-search">
+			<label class="sr-only" for="petNameSearch">Buscar por nombre de mascota</label>
 			<input
 				id="petNameSearch"
 				type="text"
 				[(ngModel)]="searchPetName"
 				(ngModelChange)="applyFilters()"
-				placeholder="Ej: Luna"
+				placeholder="Que mascota buscas"
 			/>
 		</div>
 
 		<div class="filter-field">
-			<label for="speciesInput">Especie</label>
+			<label class="sr-only" for="speciesInput">Especie</label>
 			<input
 				id="speciesInput"
 				type="text"
 				list="speciesList"
 				[(ngModel)]="selectedSpecies"
 				(ngModelChange)="onSpeciesChange()"
-				placeholder="Selecciona o escribe"
+				placeholder="Especie"
 			/>
 			<datalist id="speciesList">
 				<option *ngFor="let species of speciesOptions" [value]="species"></option>
@@ -32,14 +32,14 @@
 		</div>
 
 		<div class="filter-field">
-			<label for="breedInput">Raza</label>
+			<label class="sr-only" for="breedInput">Raza</label>
 			<input
 				id="breedInput"
 				type="text"
 				list="breedList"
 				[(ngModel)]="selectedBreed"
 				(ngModelChange)="onBreedChange()"
-				placeholder="Selecciona o escribe"
+				placeholder="Raza"
 				[disabled]="breedOptions.length === 0"
 			/>
 			<datalist id="breedList">
