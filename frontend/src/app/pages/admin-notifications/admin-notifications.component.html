@@ -1,0 +1,43 @@
+<section class="admin-page">
+  <h1>Notificaciones de administrador</h1>
+
+  <div class="row">
+    <label><input type="checkbox" [(ngModel)]="sendToAll" /> Enviar a todos</label>
+  </div>
+
+  <div class="form-grid">
+    <input type="text" [(ngModel)]="title" placeholder="Titulo" />
+    <textarea rows="4" [(ngModel)]="message" placeholder="Mensaje"></textarea>
+  </div>
+
+  <section *ngIf="!sendToAll" class="target-panel">
+    <h3>Seleccionar usuarios especificos</h3>
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="userQuery"
+        (input)="searchUsers()"
+        placeholder="Escribe nombre o email"
+      />
+    </div>
+
+    <div class="results">
+      <button
+        type="button"
+        class="result-item"
+        *ngFor="let user of userResults"
+        [class.selected]="isSelected(user.id)"
+        (click)="toggleUser(user)"
+      >
+        {{ user.firstName }} {{ user.lastName }} · {{ user.email }}
+      </button>
+    </div>
+
+    <p class="selected-count">Seleccionados: {{ selectedUsers.length }}</p>
+  </section>
+
+  <button type="button" class="btn-send" (click)="sendNotification()">Enviar notificacion</button>
+
+  <p class="ok" *ngIf="stateMessage">{{ stateMessage }}</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+</section>

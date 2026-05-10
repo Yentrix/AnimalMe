@@ -130,6 +130,11 @@
 	color: #d94848;
 }
 
+.left-favorite-btn {
+	margin-left: 0;
+	margin-right: 2px;
+}
+
 .favorite-filter-btn.active {
 	background: #d94848;
 	color: #fff;

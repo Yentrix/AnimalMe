@@ -5,6 +5,16 @@
 	</header>
 
 	<section class="filters-card" role="search" aria-label="Filtros de publicaciones">
+		<button
+			type="button"
+			class="icon-btn favorite-filter-btn left-favorite-btn"
+			(click)="toggleFavoritesFilter()"
+			[class.active]="showOnlyFavorites"
+			aria-label="Filtrar favoritos"
+		>
+			<span class="svg-icon" [innerHTML]="showOnlyFavorites ? sanitizedIcons.ICON_HEART_FILLED : sanitizedIcons.ICON_HEART_OUTLINE"></span>
+		</button>
+
 		<div class="filter-field main-search">
 			<label class="sr-only" for="petNameSearch">Buscar por nombre de mascota</label>
 			<input
@@ -57,16 +67,6 @@
 			aria-label="Buscar publicaciones"
 		>
 			<span class="svg-icon" [innerHTML]="sanitizedIcons.ICON_SEARCH"></span>
-		</button>
-
-		<button
-			type="button"
-			class="icon-btn favorite-filter-btn"
-			(click)="toggleFavoritesFilter()"
-			[class.active]="showOnlyFavorites"
-			aria-label="Filtrar favoritos"
-		>
-			<span class="svg-icon" [innerHTML]="showOnlyFavorites ? sanitizedIcons.ICON_HEART_FILLED : sanitizedIcons.ICON_HEART_OUTLINE"></span>
 		</button>
 	</section>
 

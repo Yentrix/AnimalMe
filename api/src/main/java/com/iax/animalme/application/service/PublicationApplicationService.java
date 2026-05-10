@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.iax.animalme.application.dto.PublicationCreateRequestDto;
 import com.iax.animalme.application.dto.PublicationUpdateRequestDto;
 import com.iax.animalme.domain.enums.AdoptionStatus;
+import com.iax.animalme.domain.enums.NotificationType;
 import com.iax.animalme.domain.enums.PublicationStatus;
 import com.iax.animalme.domain.enums.RequestStatus;
 import com.iax.animalme.domain.model.AdoptionRequest;
@@ -41,10 +42,12 @@ public class PublicationApplicationService {
     private final PetRepository petRepository;
     private final AdoptionRequestRepository adoptionRequestRepository;
     private final CommentRepository commentRepository;
+    private final NotificationApplicationService notificationApplicationService;
 
     public PublicationApplicationService(PublicationRepository publicationRepository, ImageRepository imageRepository,
             FileStorageService fileStorageService, UserRepository userRepository, PetRepository petRepository,
-            AdoptionRequestRepository adoptionRequestRepository, CommentRepository commentRepository) {
+            AdoptionRequestRepository adoptionRequestRepository, CommentRepository commentRepository,
+            NotificationApplicationService notificationApplicationService) {
         this.publicationRepository = publicationRepository;
         this.imageRepository = imageRepository;
         this.fileStorageService = fileStorageService;
@@ -52,6 +55,7 @@ public class PublicationApplicationService {
         this.petRepository = petRepository;
         this.adoptionRequestRepository = adoptionRequestRepository;
         this.commentRepository = commentRepository;
+        this.notificationApplicationService = notificationApplicationService;
     }
 
     @Transactional
@@ -259,7 +263,26 @@ public class PublicationApplicationService {
         adoptionRequest.setCreatedAt(LocalDateTime.now());
         adoptionRequest.setStatus(RequestStatus.PENDING);
 
-        return adoptionRequestRepository.save(adoptionRequest);
+        AdoptionRequest saved = adoptionRequestRepository.save(adoptionRequest);
+
+        if (publication.getAuthor() != null && publication.getAuthor().getId() != null) {
+            String applicantName = (applicant.getFirstName() == null ? "" : applicant.getFirstName()).trim();
+            String title = "Nueva solicitud de adopcion";
+                String notificationMessage = (applicantName.isBlank() ? "Un usuario" : applicantName)
+                + " ha enviado una solicitud para tu publicacion '"
+                + publication.getTitle()
+                + "'.";
+
+            notificationApplicationService.createNotification(
+                publication.getAuthor().getId(),
+                NotificationType.ADOPTION_REQUEST_RECEIVED,
+                title,
+                    notificationMessage,
+                publicationId,
+                saved.getId());
+        }
+
+        return saved;
     }
 
     public List<AdoptionRequest> getPublicationRequests(Long publicationId, Long authorId) {
@@ -295,6 +318,16 @@ public class PublicationApplicationService {
             publication.setAdoptionStatus(AdoptionStatus.ADOPTED);
             publicationRepository.save(publication);
 
+            if (savedRequest.getApplicant() != null && savedRequest.getApplicant().getId() != null) {
+                notificationApplicationService.createNotification(
+                        savedRequest.getApplicant().getId(),
+                        NotificationType.ADOPTION_REQUEST_ACCEPTED,
+                        "Tu solicitud fue aceptada",
+                        "Tu solicitud para la publicacion '" + publication.getTitle() + "' ha sido aceptada.",
+                        publicationId,
+                        savedRequest.getId());
+            }
+
             List<AdoptionRequest> pendingRequests = adoptionRequestRepository.findByPublicationIdAndStatus(publicationId, RequestStatus.PENDING);
             for (AdoptionRequest pending : pendingRequests) {
                 if (!pending.getId().equals(savedRequest.getId())) {
@@ -328,6 +361,19 @@ public class PublicationApplicationService {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new IllegalArgumentException("La publicacion no existe"));
         ensurePublicationAuthor(publication, authorId);
+
+        deletePublicationInternal(publicationId, publication);
+        }
+
+        @Transactional
+        public void deletePublicationAsAdmin(Long publicationId) {
+        Publication publication = publicationRepository.findById(publicationId)
+            .orElseThrow(() -> new IllegalArgumentException("La publicacion no existe"));
+
+        deletePublicationInternal(publicationId, publication);
+        }
+
+        private void deletePublicationInternal(Long publicationId, Publication publication) {
 
         publication.setPets(new ArrayList<>());
         publicationRepository.save(publication);

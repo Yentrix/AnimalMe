@@ -54,6 +54,7 @@ public class User {
     private String profilePictureUrl;
     private String country;
     private String city;
+    private LocalDateTime bannedUntil;
 
     @Enumerated(EnumType.STRING)
     private UserRole role;

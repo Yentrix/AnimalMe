@@ -1,0 +1,31 @@
+<section class="admin-page">
+  <header class="page-header">
+    <h1>Gestion de contenido</h1>
+    <div class="tabs">
+      <button type="button" [class.active]="tab === 'publications'" (click)="tab = 'publications'">Publicaciones</button>
+      <button type="button" [class.active]="tab === 'pets'" (click)="tab = 'pets'">Mascotas</button>
+    </div>
+  </header>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="list" *ngIf="tab === 'publications'">
+    <article class="card" *ngFor="let publication of publications">
+      <div>
+        <h3>{{ publication.title }}</h3>
+        <p>{{ publication.description || 'Sin descripcion' }}</p>
+      </div>
+      <button type="button" class="btn-danger" (click)="deletePublication(publication.id)">Borrar</button>
+    </article>
+  </div>
+
+  <div class="list" *ngIf="tab === 'pets'">
+    <article class="card" *ngFor="let pet of pets">
+      <div>
+        <h3>{{ pet.name }}</h3>
+        <p>{{ pet.species?.name || 'Sin especie' }} · {{ pet.breed?.name || 'Sin raza' }}</p>
+      </div>
+      <button type="button" class="btn-danger" (click)="deletePet(pet.id)">Borrar</button>
+    </article>
+  </div>
+</section>

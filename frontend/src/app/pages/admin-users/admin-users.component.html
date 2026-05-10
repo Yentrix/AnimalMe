@@ -1,0 +1,32 @@
+<section class="admin-page">
+  <header class="page-header">
+    <h1>Administrar usuarios</h1>
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="query"
+        placeholder="Buscar por nombre o email"
+      />
+      <button type="button" (click)="searchUsers()">Buscar</button>
+    </div>
+  </header>
+
+  <p class="state" *ngIf="loading">Cargando usuarios...</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="list" *ngIf="!loading && users.length > 0">
+    <article class="card" *ngFor="let user of users">
+      <div>
+        <h3>{{ user.firstName }} {{ user.lastName }}</h3>
+        <p>{{ user.email }}</p>
+        <p class="status">{{ formatStatus(user) }}</p>
+      </div>
+
+      <div class="actions" *ngIf="user.role !== 'ADMIN'">
+        <button type="button" class="btn-warn" (click)="banTemporary(user)">Ban temporal</button>
+        <button type="button" class="btn-danger" (click)="banPermanent(user)">Ban permanente</button>
+        <button type="button" class="btn-ok" (click)="unban(user)">Quitar ban</button>
+      </div>
+    </article>
+  </div>
+</section>

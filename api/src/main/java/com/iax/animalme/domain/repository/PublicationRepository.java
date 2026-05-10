@@ -13,6 +13,7 @@ public interface PublicationRepository extends JpaRepository<Publication, Long> 
     List<Publication> findByStatusOrderByCreatedAtDesc(PublicationStatus status);
     
     List<Publication> findByAuthorId(Long authorId);
+    List<Publication> findByPetsId(Long petId);
 
     List<Publication> findByAuthorIdOrderByCreatedAtDesc(Long authorId);
 }

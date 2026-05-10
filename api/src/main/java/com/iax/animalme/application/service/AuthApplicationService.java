@@ -1,5 +1,6 @@
 package com.iax.animalme.application.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.iax.animalme.application.dto.LoginRequestDto;
 import com.iax.animalme.domain.enums.UserRole;
+import com.iax.animalme.domain.enums.UserStatus;
 import com.iax.animalme.domain.model.User;
 import com.iax.animalme.domain.repository.UserRepository;
 import com.iax.animalme.domain.service.UserDomainService;
@@ -28,11 +30,27 @@ public class AuthApplicationService {
     }
 
     public User login(LoginRequestDto loginRequestDto) {
-        return userRepository.findByEmail(loginRequestDto.getEmail())
-            .filter(user -> userDomainService.validatePasswordUser(user, loginRequestDto.getPassword()))
+        User user = userRepository.findByEmail(loginRequestDto.getEmail())
+            .filter(foundUser -> userDomainService.validatePasswordUser(foundUser, loginRequestDto.getPassword()))
             .map(Optional::of)
             .map(userDomainService::validateLogin)
             .orElseThrow(() -> new RuntimeException("Incorrect email or password"));
+
+        if (user.getStatus() == UserStatus.BANNED_PERMANENT) {
+            throw new IllegalArgumentException("Tu cuenta ha sido baneada permanentemente");
+        }
+
+        if (user.getStatus() == UserStatus.BANNED_TEMPORARY) {
+            if (user.getBannedUntil() != null && user.getBannedUntil().isAfter(LocalDateTime.now())) {
+                throw new IllegalArgumentException("Tu cuenta esta baneada temporalmente");
+            }
+
+            user.setStatus(UserStatus.ACTIVE);
+            user.setBannedUntil(null);
+            user = userRepository.save(user);
+        }
+
+        return user;
     }
 
     public User registerClient(User user) {
@@ -40,6 +58,8 @@ public class AuthApplicationService {
         userDomainService.validatePassword(user.getPassword());
 
         user.setRole(UserRole.USER);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setBannedUntil(null);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setContactEmail(user.getEmail());

@@ -1,0 +1,16 @@
+.admin-page { display: flex; flex-direction: column; gap: 14px; }
+.page-header { display: flex; flex-direction: column; gap: 10px; }
+.search-row { display: flex; gap: 8px; }
+.search-row input { flex: 1; border: 1px solid var(--input-border); border-radius: 10px; padding: 10px; background: var(--input-bg); color: var(--text-primary); }
+.search-row button { border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; background: var(--btn-primary-bg); color: #fff; font-weight: 700; }
+.list { display: grid; gap: 10px; }
+.card { border: 1px solid var(--border-color); background: var(--bg-secondary); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; gap: 10px; }
+.card h3, .card p { margin: 0; }
+.status { opacity: 0.75; font-size: 13px; margin-top: 4px; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.actions button { border-radius: 8px; border: 1px solid var(--border-color); padding: 6px 10px; font-weight: 700; cursor: pointer; }
+.btn-warn { background: #f7d47f; color: #5a3f00; }
+.btn-danger { background: #d94848; color: #fff; }
+.btn-ok { background: #64b889; color: #103624; }
+.error { color: #d12f2f; }
+.state { opacity: 0.8; }

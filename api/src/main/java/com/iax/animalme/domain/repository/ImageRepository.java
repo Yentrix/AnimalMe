@@ -11,5 +11,6 @@ import com.iax.animalme.domain.model.Image;
 public interface ImageRepository extends JpaRepository<Image, Long> {
     List<Image> findByPetId(Long petId);
     List<Image> findByPublicationId(Long publicationId);
+    void deleteByPetId(Long petId);
     void deleteByPublicationId(Long publicationId);
 }
