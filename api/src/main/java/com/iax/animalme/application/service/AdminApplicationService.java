@@ -142,7 +142,10 @@ public class AdminApplicationService {
         List<Long> targetUserIds = new ArrayList<>();
 
         if (Boolean.TRUE.equals(request.getSendToAll())) {
-            userRepository.findByStatus(UserStatus.ACTIVE).forEach(user -> targetUserIds.add(user.getId()));
+            userRepository.findAll().stream()
+                    .filter(user -> user.getRole() != UserRole.ADMIN)
+                    .filter(user -> user.getStatus() == null || user.getStatus() == UserStatus.ACTIVE)
+                    .forEach(user -> targetUserIds.add(user.getId()));
         } else {
             if (request.getUserIds() == null || request.getUserIds().isEmpty()) {
                 throw new IllegalArgumentException("Debes seleccionar al menos un usuario");

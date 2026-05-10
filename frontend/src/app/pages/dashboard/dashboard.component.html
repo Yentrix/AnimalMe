@@ -33,51 +33,8 @@
         <!-- TOPBAR -->
         <header class="topbar">
             <div class="topbar-left no-select">
-                <button
-                    class="notification-btn topbar-toggle"
-                    *ngIf="user$ | async"
-                    (click)="toggleNotificationsPanel()"
-                    [attr.aria-label]="'Abrir notificaciones'"
-                >
-                    <span class="icon" [innerHTML]="sanitizedIcons['ICON_BELL']"></span>
-                    <span class="notification-count" *ngIf="unreadNotificationsCount > 0">{{ unreadNotificationsCount }}</span>
-                </button>
-
                 <img src="assets/logo_empty.png" alt="AnimalMe Logo" class="brand-logo" />
                 <span class="brand-name">AnimalMe</span>
-
-                <div class="notifications-panel" *ngIf="isNotificationPanelOpen">
-                    <header class="notifications-header">
-                        <h3>Notificaciones</h3>
-                        <button type="button" class="mark-read-btn" (click)="markAllNotificationsAsRead()">Marcar todo leido</button>
-                    </header>
-
-                    <div class="notifications-list" *ngIf="notifications.length > 0; else emptyNotifications">
-                        <article
-                            class="notification-item"
-                            *ngFor="let notification of notifications"
-                            [class.read]="notification.isRead"
-                        >
-                            <div class="notification-main">
-                                <strong>{{ notification.title }}</strong>
-                                <p>{{ notification.message }}</p>
-                                <small>{{ notification.createdAt | date:'medium' }}</small>
-                            </div>
-                            <button
-                                type="button"
-                                class="notification-read-btn"
-                                *ngIf="!notification.isRead"
-                                (click)="markNotificationAsRead(notification)"
-                            >
-                                Marcar leida
-                            </button>
-                        </article>
-                    </div>
-
-                    <ng-template #emptyNotifications>
-                        <p class="notifications-empty">No tienes notificaciones nuevas.</p>
-                    </ng-template>
-                </div>
             </div>
 
             <div class="topbar-right no-select">
@@ -115,6 +72,50 @@
 
                 <div class="login-item" *ngIf="!(user$ | async)" routerLink="/auth" routerLinkActive="active">
                     Iniciar sesión
+                </div>
+
+                <div class="notification-wrapper" *ngIf="user$ | async">
+                    <button
+                        class="notification-btn topbar-toggle"
+                        (click)="toggleNotificationsPanel()"
+                        [attr.aria-label]="'Abrir notificaciones'"
+                    >
+                        <span class="icon" [innerHTML]="sanitizedIcons['ICON_BELL']"></span>
+                        <span class="notification-count" *ngIf="unreadNotificationsCount > 0">{{ unreadNotificationsCount }}</span>
+                    </button>
+
+                    <div class="notifications-panel" *ngIf="isNotificationPanelOpen">
+                        <header class="notifications-header">
+                            <h3>Notificaciones</h3>
+                            <button type="button" class="mark-read-btn" (click)="markAllNotificationsAsRead()">Marcar todo leido</button>
+                        </header>
+
+                        <div class="notifications-list" *ngIf="notifications.length > 0; else emptyNotifications">
+                            <article
+                                class="notification-item"
+                                *ngFor="let notification of notifications"
+                                [class.read]="notification.isRead"
+                            >
+                                <div class="notification-main">
+                                    <strong>{{ notification.title }}</strong>
+                                    <p>{{ notification.message }}</p>
+                                    <small>{{ notification.createdAt | date:'medium' }}</small>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="notification-read-btn"
+                                    *ngIf="!notification.isRead"
+                                    (click)="markNotificationAsRead(notification)"
+                                >
+                                    Marcar leida
+                                </button>
+                            </article>
+                        </div>
+
+                        <ng-template #emptyNotifications>
+                            <p class="notifications-empty">No tienes notificaciones nuevas.</p>
+                        </ng-template>
+                    </div>
                 </div>
             </div>
         </header>
