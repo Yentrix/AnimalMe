@@ -42,6 +42,14 @@ export interface PublicationSummary {
   pendingRequestsCount?: number;
 }
 
+export interface PublicationUpdatePayload {
+  title: string | null;
+  description: string;
+  adoptionStatus: 'AVAILABLE' | 'URGENT' | 'ADOPTED';
+  petIds: number[];
+  removedImageIds: number[];
+}
+
 export interface AdoptionRequestSummary {
   id: number;
   message: string;
@@ -71,13 +79,12 @@ export class PublicationService {
     return this.http.get<PublicationSummary[]>(`${this.apiUrl}/author/${authorId}`);
   }
 
-  updatePublication(publicationId: number, authorId: number, payload: {
-    title: string;
-    description: string;
-    adoptionStatus: 'AVAILABLE' | 'URGENT' | 'ADOPTED';
-  }): Observable<PublicationSummary> {
+  updatePublication(publicationId: number, authorId: number, payload: PublicationUpdatePayload, files: File[]): Observable<PublicationSummary> {
     const params = new HttpParams().set('authorId', authorId.toString());
-    return this.http.put<PublicationSummary>(`${this.apiUrl}/${publicationId}`, payload, { params });
+    const formData = new FormData();
+    formData.append('publication', JSON.stringify(payload));
+    files.forEach(file => formData.append('images', file));
+    return this.http.put<PublicationSummary>(`${this.apiUrl}/${publicationId}`, formData, { params });
   }
 
   createAdoptionRequest(publicationId: number, applicantId: number, message: string): Observable<AdoptionRequestSummary> {

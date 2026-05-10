@@ -54,6 +54,10 @@
     flex-direction: column;
 }
 
+.pet-card.in-publication .card-content {
+    opacity: 0.72;
+}
+
 .card-image-container {
     height: 220px;
     background: var(--bg-primary);
@@ -107,6 +111,16 @@
     border-radius: 999px;
     padding: 3px 10px;
     font-size: 12px;
+}
+
+.publication-badge {
+    border: 1px solid #c9a227;
+    background: #f6e7ad;
+    color: #6c5412;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .btn-edit-neo {

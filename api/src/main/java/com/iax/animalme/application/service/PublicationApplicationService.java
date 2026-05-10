@@ -131,13 +131,40 @@ public class PublicationApplicationService {
     }
 
     @Transactional
-    public Publication updatePublication(Long publicationId, Long authorId, PublicationUpdateRequestDto request) {
+    public Publication updatePublication(Long publicationId, Long authorId, PublicationUpdateRequestDto request, MultipartFile[] images) throws Exception {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new IllegalArgumentException("La publicacion no existe"));
         ensurePublicationAuthor(publication, authorId);
 
+        if (request.getPetIds() == null || request.getPetIds().isEmpty()) {
+            throw new IllegalArgumentException("La publicacion debe incluir al menos una mascota");
+        }
+
+        List<Pet> selectedPets = petRepository.findAllById(request.getPetIds());
+        if (selectedPets.size() != request.getPetIds().size()) {
+            throw new IllegalArgumentException("Hay mascotas seleccionadas que no existen");
+        }
+
+        for (Pet pet : selectedPets) {
+            if (pet.getOwner() == null || !authorId.equals(pet.getOwner().getId())) {
+                throw new IllegalArgumentException("Solo puedes publicar mascotas que te pertenecen");
+            }
+        }
+
+        Set<Long> previousPetIds = publication.getPets() == null
+                ? new HashSet<>()
+                : publication.getPets().stream().map(Pet::getId).collect(Collectors.toSet());
+        Set<Long> selectedPetIds = selectedPets.stream().map(Pet::getId).collect(Collectors.toSet());
+        Set<Long> newlyAddedPetIds = new HashSet<>(selectedPetIds);
+        newlyAddedPetIds.removeAll(previousPetIds);
+
+        publication.setPets(selectedPets);
+
         if (StringUtils.hasText(request.getTitle())) {
             publication.setTitle(request.getTitle().trim());
+        } else {
+            String generatedTitle = selectedPets.stream().map(Pet::getName).collect(Collectors.joining(", "));
+            publication.setTitle(generatedTitle);
         }
         publication.setDescription(request.getDescription() == null ? "" : request.getDescription().trim());
 
@@ -147,6 +174,57 @@ public class PublicationApplicationService {
                 publication.setStatus(PublicationStatus.CLOSED);
             } else if (publication.getStatus() == PublicationStatus.CLOSED) {
                 publication.setStatus(PublicationStatus.OPEN);
+            }
+        }
+
+        List<Image> publicationImages = imageRepository.findByPublicationId(publicationId);
+        Set<Long> removableIds = request.getRemovedImageIds() == null
+                ? new HashSet<>()
+                : new HashSet<>(request.getRemovedImageIds());
+
+        if (!removableIds.isEmpty()) {
+            List<Image> removableImages = publicationImages.stream()
+                    .filter(img -> img.getId() != null && removableIds.contains(img.getId()))
+                    .toList();
+            imageRepository.deleteAll(removableImages);
+            publicationImages = publicationImages.stream()
+                    .filter(img -> img.getId() == null || !removableIds.contains(img.getId()))
+                    .toList();
+        }
+
+        Set<String> currentUrls = publicationImages.stream()
+                .map(Image::getUrl)
+                .filter(StringUtils::hasText)
+                .collect(Collectors.toSet());
+
+        for (Pet pet : selectedPets) {
+            if (!newlyAddedPetIds.contains(pet.getId()) || pet.getImages() == null) {
+                continue;
+            }
+            for (Image petImage : pet.getImages()) {
+                if (!StringUtils.hasText(petImage.getUrl()) || !currentUrls.add(petImage.getUrl())) {
+                    continue;
+                }
+                Image img = new Image();
+                img.setUrl(petImage.getUrl());
+                img.setPublication(publication);
+                imageRepository.save(img);
+            }
+        }
+
+        if (images != null) {
+            for (MultipartFile file : images) {
+                if (file == null || file.isEmpty()) {
+                    continue;
+                }
+                String fileName = fileStorageService.storeFile(file, "publications", publication.getId().toString());
+                if (!currentUrls.add(fileName)) {
+                    continue;
+                }
+                Image img = new Image();
+                img.setUrl(fileName);
+                img.setPublication(publication);
+                imageRepository.save(img);
             }
         }
 

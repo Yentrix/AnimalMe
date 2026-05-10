@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AdoptionStatus } from '../../enums/adoption-status';
 import {
   AdoptionRequestSummary,
   PublicationService,
@@ -13,17 +11,16 @@ interface AuthUser {
   id?: number;
 }
 
-type PublicationModalView = 'menu' | 'edit' | 'requests';
+type PublicationModalView = 'menu' | 'requests';
 
 @Component({
   selector: 'app-posts',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule],
   templateUrl: './posts.component.html',
   styleUrl: './posts.component.css'
 })
 export class PostsComponent implements OnInit {
-  publicationEditForm!: FormGroup;
   publications: PublicationSummary[] = [];
   publicationImageIndex: Record<number, number> = {};
   selectedPublication: PublicationSummary | null = null;
@@ -33,13 +30,11 @@ export class PostsComponent implements OnInit {
   isLoadingRequests = false;
   publicationActionMessage = '';
   publicationActionError = '';
-  isSavingPublication = false;
 
-  adoptionStatuses = Object.values(AdoptionStatus);
-  readonly statusLabels: Record<AdoptionStatus, string> = {
-    [AdoptionStatus.AVAILABLE]: 'Se puede adoptar',
-    [AdoptionStatus.URGENT]: 'Urgente de adopcion',
-    [AdoptionStatus.ADOPTED]: 'Adoptado'
+  readonly statusLabels: Record<'AVAILABLE' | 'URGENT' | 'ADOPTED', string> = {
+    AVAILABLE: 'Se puede adoptar',
+    URGENT: 'Urgente de adopcion',
+    ADOPTED: 'Adoptado'
   };
 
   readonly requestStatusLabels: Record<AdoptionRequestSummary['status'], string> = {
@@ -50,18 +45,11 @@ export class PostsComponent implements OnInit {
   };
 
   constructor(
-    private fb: FormBuilder,
     private publicationService: PublicationService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    this.publicationEditForm = this.fb.group({
-      title: ['', [Validators.required]],
-      description: [''],
-      adoptionStatus: [AdoptionStatus.AVAILABLE, [Validators.required]]
-    });
-
     this.loadPublications();
   }
 
@@ -138,12 +126,6 @@ export class PostsComponent implements OnInit {
     this.publicationActionMessage = '';
     this.adoptionRequests = [];
     this.isPublicationModalOpen = true;
-
-    this.publicationEditForm.patchValue({
-      title: publication.title ?? '',
-      description: publication.description ?? '',
-      adoptionStatus: publication.adoptionStatus ?? AdoptionStatus.AVAILABLE
-    });
   }
 
   closePublicationModal(): void {
@@ -154,13 +136,19 @@ export class PostsComponent implements OnInit {
     this.publicationActionError = '';
     this.publicationActionMessage = '';
     this.isLoadingRequests = false;
-    this.isSavingPublication = false;
   }
 
   openEditPublication(): void {
-    this.publicationModalView = 'edit';
-    this.publicationActionError = '';
-    this.publicationActionMessage = '';
+    if (!this.selectedPublication) {
+      return;
+    }
+
+    this.closePublicationModal();
+    this.router.navigate(['/posts/create'], {
+      queryParams: {
+        publicationId: this.selectedPublication.id
+      }
+    });
   }
 
   openAdoptionRequests(): void {
@@ -187,41 +175,6 @@ export class PostsComponent implements OnInit {
       error: () => {
         this.publicationActionError = 'No se pudieron cargar las solicitudes de adopcion.';
         this.isLoadingRequests = false;
-      }
-    });
-  }
-
-  savePublicationChanges(): void {
-    if (!this.selectedPublication || this.publicationEditForm.invalid) {
-      return;
-    }
-
-    const userId = this.getCurrentUserId();
-    if (!userId) {
-      this.publicationActionError = 'No se encontro el usuario autenticado.';
-      return;
-    }
-
-    this.isSavingPublication = true;
-    this.publicationActionError = '';
-    this.publicationActionMessage = '';
-
-    const payload = {
-      title: String(this.publicationEditForm.get('title')?.value ?? '').trim(),
-      description: String(this.publicationEditForm.get('description')?.value ?? '').trim(),
-      adoptionStatus: this.publicationEditForm.get('adoptionStatus')?.value as 'AVAILABLE' | 'URGENT' | 'ADOPTED'
-    };
-
-    this.publicationService.updatePublication(this.selectedPublication.id, userId, payload).subscribe({
-      next: (updatedPublication) => {
-        this.selectedPublication = updatedPublication;
-        this.publicationActionMessage = 'Publicacion actualizada correctamente.';
-        this.isSavingPublication = false;
-        this.loadPublications();
-      },
-      error: () => {
-        this.publicationActionError = 'No se pudo actualizar la publicacion.';
-        this.isSavingPublication = false;
       }
     });
   }

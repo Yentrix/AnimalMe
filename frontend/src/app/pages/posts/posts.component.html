@@ -89,34 +89,6 @@
         </div>
       </section>
 
-      <section *ngIf="publicationModalView === 'edit'" class="modal-edit-view">
-        <form [formGroup]="publicationEditForm" class="neo-form">
-          <label for="editTitle">Nombre de la publicación</label>
-          <input id="editTitle" type="text" formControlName="title" />
-
-          <label for="editDescription">Descripción</label>
-          <textarea id="editDescription" rows="4" formControlName="description"></textarea>
-
-          <label for="editAdoptionStatus">Estado de adopción</label>
-          <select id="editAdoptionStatus" formControlName="adoptionStatus">
-            <option *ngFor="let status of adoptionStatuses" [value]="status">
-              {{ statusLabels[status] }}
-            </option>
-          </select>
-        </form>
-        <div class="modal-actions">
-          <button type="button" class="btn-cancel" (click)="publicationModalView = 'menu'">Volver</button>
-          <button
-            type="button"
-            class="btn-save"
-            (click)="savePublicationChanges()"
-            [disabled]="publicationEditForm.invalid || isSavingPublication"
-          >
-            {{ isSavingPublication ? 'Guardando...' : 'Guardar cambios' }}
-          </button>
-        </div>
-      </section>
-
       <section *ngIf="publicationModalView === 'requests'" class="modal-requests-view">
         <div class="requests-loading" *ngIf="isLoadingRequests">Cargando solicitudes...</div>
 

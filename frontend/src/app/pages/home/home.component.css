@@ -17,14 +17,19 @@
 }
 
 .filters-card {
-	background: var(--bg-secondary);
-	border: 2px solid var(--border-color);
-	border-radius: 16px;
-	padding: 14px;
+	background: color-mix(in srgb, var(--bg-secondary) 86%, transparent);
+	border: none;
+	border-bottom: 2px solid var(--border-color);
+	border-radius: 0;
+	padding: 10px 0 12px;
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
 	gap: 10px;
 	align-items: end;
+	position: sticky;
+	top: 6px;
+	z-index: 25;
+	backdrop-filter: blur(5px);
 }
 
 .filter-field {
@@ -39,21 +44,22 @@
 }
 
 .filter-field input {
-	border: 2px solid var(--input-border);
-	background: var(--input-bg);
-	border-radius: 12px;
-	padding: 10px 12px;
+	border: none;
+	border-bottom: 2px solid var(--input-border);
+	background: transparent;
+	border-radius: 0;
+	padding: 8px 2px;
 	color: var(--text-primary);
 }
 
 .filter-field input:focus {
 	outline: none;
-	border-color: var(--input-border-focus);
+	border-bottom-color: var(--input-border-focus);
 }
 
 .btn-clear {
 	border: 2px solid var(--border-color);
-	background: transparent;
+	background: var(--bg-secondary);
 	color: var(--text-primary);
 	border-radius: 12px;
 	padding: 10px 12px;
@@ -225,13 +231,14 @@
 	height: 390px;
 	border-radius: 16px;
 	overflow: hidden;
-	background: var(--bg-primary);
+	background: #111;
 }
 
 .modal-image-wrapper img {
 	width: 100%;
 	height: 100%;
-	object-fit: cover;
+	object-fit: contain;
+	object-position: center;
 }
 
 .modal-image-list {

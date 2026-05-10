@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AdoptionStatus } from '../../enums/adoption-status';
 import { PetService } from '../../services/pet/pet.service';
-import { PublicationService } from '../../services/publication/publication.service';
+import {
+  PublicationService,
+  PublicationUpdatePayload
+} from '../../services/publication/publication.service';
 
 interface PetImage {
   url: string;
@@ -19,9 +23,10 @@ interface PetSummary {
 }
 
 interface PreviewImage {
+  id?: number;
   url: string;
   name: string;
-  source: 'pet' | 'upload';
+  source: 'existing' | 'pet' | 'upload';
 }
 
 interface AuthUser {
@@ -38,9 +43,16 @@ interface AuthUser {
 export class PostCreateComponent implements OnInit {
   postForm!: FormGroup;
   pets: PetSummary[] = [];
+  availablePets: PetSummary[] = [];
   selectedPetIds: number[] = [];
   selectedFiles: File[] = [];
   previewImages: PreviewImage[] = [];
+  removedImageIds: number[] = [];
+  manuallyRemovedUrls = new Set<string>();
+  associatedPetIds = new Set<number>();
+  editablePublicationPetIds = new Set<number>();
+  isEditMode = false;
+  editingPublicationId: number | null = null;
   isSubmitting = false;
   errorMessage = '';
   successMessage = '';
@@ -55,7 +67,8 @@ export class PostCreateComponent implements OnInit {
     private fb: FormBuilder,
     private petService: PetService,
     private publicationService: PublicationService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
@@ -65,7 +78,14 @@ export class PostCreateComponent implements OnInit {
       adoptionStatus: [AdoptionStatus.AVAILABLE, [Validators.required]]
     });
 
-    this.loadPets();
+    this.route.queryParamMap.subscribe(params => {
+      const publicationIdParam = params.get('publicationId');
+      const publicationId = publicationIdParam ? Number(publicationIdParam) : NaN;
+      this.isEditMode = Number.isFinite(publicationId) && publicationId > 0;
+      this.editingPublicationId = this.isEditMode ? publicationId : null;
+
+      this.loadPetsAndPublications();
+    });
   }
 
   get titlePlaceholder(): string {
@@ -85,19 +105,80 @@ export class PostCreateComponent implements OnInit {
     return this.selectedPetIds.length === 0 && this.isSubmitting;
   }
 
-  loadPets(): void {
+  get pageTitle(): string {
+    return this.isEditMode ? 'Editar Publicacion de Adopcion' : 'Crear Publicacion de Adopcion';
+  }
+
+  get pageSubtitle(): string {
+    return this.isEditMode
+      ? 'Modifica mascotas asociadas, texto e imagenes de la publicacion.'
+      : 'Asocia una o varias mascotas y publica su historia.';
+  }
+
+  get submitLabel(): string {
+    if (this.isSubmitting) {
+      return this.isEditMode ? 'Guardando...' : 'Creando...';
+    }
+    return this.isEditMode ? 'Guardar cambios' : 'Crear publicacion';
+  }
+
+  loadPetsAndPublications(): void {
     const userId = this.getCurrentUserId();
     if (!userId) {
       this.errorMessage = 'Inicia sesion para crear una publicacion.';
       return;
     }
 
-    this.petService.getPetsByOwner(userId).subscribe({
-      next: (pets) => {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    forkJoin({
+      pets: this.petService.getPetsByOwner(userId),
+      publications: this.publicationService.getPublicationsByAuthor(userId)
+    }).subscribe({
+      next: ({ pets, publications }) => {
         this.pets = pets;
+
+        const associated = new Set<number>();
+        publications.forEach(pub => {
+          (pub.pets ?? []).forEach(pet => associated.add(pet.id));
+        });
+        this.associatedPetIds = associated;
+
+        if (this.isEditMode && this.editingPublicationId != null) {
+          const publication = publications.find(pub => pub.id === this.editingPublicationId);
+          if (!publication) {
+            this.errorMessage = 'No se encontro la publicacion a editar.';
+            this.availablePets = [];
+            return;
+          }
+
+          this.selectedPetIds = (publication.pets ?? []).map(p => p.id);
+          this.editablePublicationPetIds = new Set(this.selectedPetIds);
+          this.postForm.patchValue({
+            title: publication.title ?? '',
+            description: publication.description ?? '',
+            adoptionStatus: publication.adoptionStatus ?? AdoptionStatus.AVAILABLE
+          });
+
+          this.removedImageIds = [];
+          this.manuallyRemovedUrls.clear();
+          this.previewImages = (publication.images ?? []).map((image, index) => ({
+            id: image.id,
+            url: image.url,
+            name: `actual-${index + 1}`,
+            source: 'existing' as const
+          }));
+        } else {
+          this.editablePublicationPetIds = new Set<number>();
+          this.resetForm();
+        }
+
+        this.rebuildAvailablePets();
+        this.syncPetImagePreviews();
       },
       error: () => {
-        this.errorMessage = 'No se pudieron cargar tus mascotas.';
+        this.errorMessage = 'No se pudieron cargar tus mascotas y publicaciones.';
       }
     });
   }
@@ -112,6 +193,7 @@ export class PostCreateComponent implements OnInit {
     }
 
     this.syncPetImagePreviews();
+    this.rebuildAvailablePets();
   }
 
   onImagesSelected(event: Event): void {
@@ -142,7 +224,21 @@ export class PostCreateComponent implements OnInit {
   }
 
   removeUploadedImage(imageToRemove: PreviewImage): void {
-    if (!imageToRemove || imageToRemove.source !== 'upload') {
+    if (!imageToRemove) {
+      return;
+    }
+
+    if (imageToRemove.source === 'existing' && imageToRemove.id != null) {
+      if (!this.removedImageIds.includes(imageToRemove.id)) {
+        this.removedImageIds = [...this.removedImageIds, imageToRemove.id];
+      }
+      this.manuallyRemovedUrls.add(imageToRemove.url);
+      this.previewImages = this.previewImages.filter(img => img !== imageToRemove);
+      this.syncPetImagePreviews();
+      return;
+    }
+
+    if (imageToRemove.source !== 'upload') {
       return;
     }
 
@@ -188,6 +284,28 @@ export class PostCreateComponent implements OnInit {
     formData.append('publication', JSON.stringify(payload));
     this.selectedFiles.forEach(file => formData.append('images', file));
 
+    if (this.isEditMode && this.editingPublicationId != null) {
+      const updatePayload: PublicationUpdatePayload = {
+        ...payload,
+        removedImageIds: this.removedImageIds
+      };
+
+      this.publicationService.updatePublication(this.editingPublicationId, userId, updatePayload, this.selectedFiles).subscribe({
+        next: () => {
+          this.successMessage = 'Publicacion actualizada correctamente.';
+          this.isSubmitting = false;
+          setTimeout(() => {
+            this.router.navigate(['/posts']);
+          }, 500);
+        },
+        error: () => {
+          this.errorMessage = 'No se pudo actualizar la publicacion. Intenta de nuevo.';
+          this.isSubmitting = false;
+        }
+      });
+      return;
+    }
+
     this.publicationService.createPublication(formData, userId).subscribe({
       next: () => {
         this.successMessage = 'Publicacion creada correctamente.';
@@ -204,13 +322,16 @@ export class PostCreateComponent implements OnInit {
   }
 
   private syncPetImagePreviews(): void {
-    const petImages: PreviewImage[] = [];
+    const existingImages = this.previewImages.filter(img => img.source === 'existing');
+    const uploadedImages = this.previewImages.filter(img => img.source === 'upload');
+    const existingUrls = new Set(existingImages.map(img => img.url));
 
+    const petImages: PreviewImage[] = [];
     this.pets
       .filter(pet => this.selectedPetIds.includes(pet.id))
       .forEach(pet => {
         (pet.images ?? []).forEach((img, index) => {
-          if (!img.url) {
+          if (!img.url || existingUrls.has(img.url) || this.manuallyRemovedUrls.has(img.url)) {
             return;
           }
 
@@ -222,8 +343,20 @@ export class PostCreateComponent implements OnInit {
         });
       });
 
-    const uploaded = this.previewImages.filter(img => img.source === 'upload');
-    this.previewImages = [...petImages, ...uploaded];
+    this.previewImages = [...existingImages, ...petImages, ...uploadedImages];
+  }
+
+  private rebuildAvailablePets(): void {
+    const selected = new Set(this.selectedPetIds);
+    this.availablePets = this.pets.filter(pet => {
+      if (selected.has(pet.id)) {
+        return true;
+      }
+      if (this.isEditMode && this.editablePublicationPetIds.has(pet.id)) {
+        return true;
+      }
+      return !this.associatedPetIds.has(pet.id);
+    });
   }
 
   private resetForm(): void {
@@ -235,6 +368,8 @@ export class PostCreateComponent implements OnInit {
     this.selectedPetIds = [];
     this.selectedFiles = [];
     this.previewImages = [];
+    this.removedImageIds = [];
+    this.manuallyRemovedUrls.clear();
     this.isSubmitting = false;
   }
 

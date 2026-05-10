@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { PetService } from '../../services/pet/pet.service';
+import { PublicationService } from '../../services/publication/publication.service';
 
 @Component({
   selector: 'app-pet-create',
@@ -23,9 +24,14 @@ export class PetManagementComponent implements OnInit {
   filteredBreeds: any[] = [];
   allSpecies: any[] = [];
   allBreeds: any[] = [];
+  petsInPublication = new Set<number>();
 
 
-  constructor(private fb: FormBuilder, private petService: PetService) { }
+  constructor(
+    private fb: FormBuilder,
+    private petService: PetService,
+    private publicationService: PublicationService
+  ) { }
 
   ngOnInit(): void {
     this.initForm();
@@ -67,10 +73,26 @@ export class PetManagementComponent implements OnInit {
     this.petService.getPetsByOwner(ownerId).subscribe({
       next: (data) => {
         this.pets = data; // Asignamos el array de mascotas que viene del servidor
+        this.loadPetsInPublication(ownerId);
         console.log('Mascotas cargadas con éxito:', this.pets);
       },
       error: (err) => {
         console.error('Error al cargar las mascotas:', err);
+      }
+    });
+  }
+
+  loadPetsInPublication(ownerId: number) {
+    this.publicationService.getPublicationsByAuthor(ownerId).subscribe({
+      next: (publications) => {
+        const associated = new Set<number>();
+        publications.forEach(pub => {
+          (pub.pets ?? []).forEach(pet => associated.add(pet.id));
+        });
+        this.petsInPublication = associated;
+      },
+      error: () => {
+        this.petsInPublication = new Set<number>();
       }
     });
   }

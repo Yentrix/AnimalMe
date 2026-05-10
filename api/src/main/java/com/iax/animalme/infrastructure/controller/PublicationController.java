@@ -63,12 +63,20 @@ public class PublicationController {
         return publicationService.findByAuthorIdOrderByCreatedAtDesc(authorId);
     }
 
-    @PutMapping("/{publicationId}")
+    @PutMapping(value = "/{publicationId}", consumes = {"multipart/form-data"})
     public ResponseEntity<Publication> updatePublication(
             @PathVariable Long publicationId,
             @RequestParam("authorId") Long authorId,
-            @RequestBody PublicationUpdateRequestDto request) {
-        return ResponseEntity.ok(publicationService.updatePublication(publicationId, authorId, request));
+            @RequestPart("publication") String publicationJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] images) {
+        try {
+            PublicationUpdateRequestDto request = objectMapper.readValue(publicationJson, PublicationUpdateRequestDto.class);
+            return ResponseEntity.ok(publicationService.updatePublication(publicationId, authorId, request, images));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PostMapping("/{publicationId}/adoption-requests")

@@ -1,8 +1,8 @@
 <section class="post-create-page">
 	<header class="page-header">
 		<div>
-			<h1>Crear Publicacion de Adopcion</h1>
-			<p>Asocia una o varias mascotas y publica su historia.</p>
+			<h1>{{ pageTitle }}</h1>
+			<p>{{ pageSubtitle }}</p>
 		</div>
 		<a class="back-link" routerLink="/posts">Volver a publicaciones</a>
 	</header>
@@ -36,17 +36,20 @@
 				<div class="form-success" *ngIf="successMessage">{{ successMessage }}</div>
 
 				<button type="submit" class="btn-primary" [disabled]="isSubmitting">
-					{{ isSubmitting ? 'Creando...' : 'Crear publicacion' }}
+					{{ submitLabel }}
 				</button>
 			</form>
 		</article>
 
 		<article class="card pets-card">
-			<h2>Mascotas asociadas</h2>
+			<div class="pets-header">
+				<h2>Mascotas asociadas</h2>
+				<a class="add-pet-link" routerLink="/pets">Crear mascota</a>
+			</div>
 			<p>Selecciona al menos una mascota de tu perfil.</p>
 
-			<div class="pet-list" *ngIf="pets.length > 0; else noPets">
-				<label class="pet-item" *ngFor="let pet of pets">
+			<div class="pet-list" *ngIf="availablePets.length > 0; else noPets">
+				<label class="pet-item" *ngFor="let pet of availablePets">
 					<input
 						type="checkbox"
 						[checked]="selectedPetIds.includes(pet.id)"
@@ -60,7 +63,7 @@
 			</div>
 
 			<ng-template #noPets>
-				<div class="empty-state">No tienes mascotas registradas todavia.</div>
+				<div class="empty-state">No tienes mascotas disponibles para asociar en esta publicacion.</div>
 			</ng-template>
 
 			<div class="input-error" *ngIf="selectedPetErrorVisible">Debes seleccionar al menos una mascota.</div>
@@ -75,9 +78,9 @@
 			<figure class="preview-item" *ngFor="let image of previewImages">
 				<img [src]="image.url" [alt]="image.name" />
 				<figcaption>
-					<span>{{ image.source === 'pet' ? 'Mascota' : 'Subida' }}</span>
+					<span>{{ image.source === 'pet' ? 'Mascota' : (image.source === 'existing' ? 'Actual' : 'Subida') }}</span>
 					<button
-						*ngIf="image.source === 'upload'"
+						*ngIf="image.source !== 'pet'"
 						type="button"
 						class="remove-btn"
 						(click)="removeUploadedImage(image)"
