@@ -386,6 +386,24 @@
 @media (max-width: 760px) {
 	.filters-card {
 		grid-template-columns: 1fr;
+		top: 0;
+		padding: 8px 0 10px;
+		border-bottom-width: 1px;
+		background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	}
+
+	.filter-field input {
+		padding: 6px 0;
+		border-bottom-width: 1px;
+	}
+
+	.btn-clear {
+		border: none;
+		border-bottom: 1px solid var(--border-color);
+		border-radius: 0;
+		padding: 6px 0;
+		justify-self: start;
+		background: transparent;
 	}
 
 	.modal-image-wrapper {

@@ -143,10 +143,11 @@ export class PostsComponent implements OnInit {
       return;
     }
 
+    const publicationId = this.selectedPublication.id;
     this.closePublicationModal();
     this.router.navigate(['/posts/create'], {
       queryParams: {
-        publicationId: this.selectedPublication.id
+        publicationId
       }
     });
   }

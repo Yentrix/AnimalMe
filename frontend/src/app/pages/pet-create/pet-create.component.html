@@ -11,6 +11,7 @@
 
     <div class="pets-grid">
         <div class="pet-card" *ngFor="let pet of pets" [class.in-publication]="petsInPublication.has(pet.id)">
+            <span class="publication-badge" *ngIf="petsInPublication.has(pet.id)">En publicación</span>
             <div class="card-image-container">
                 <img [src]="pet.images?.length > 0 ? pet.images[0].url : 'assets/placeholder.png'"
                     (error)="handleImageError($event)" class="card-img-top">
@@ -29,7 +30,6 @@
                     <div class="badges-row">
                         <span class="detail-badge">{{ pet.sex }}</span>
                         <span class="detail-badge" *ngIf="pet.sizeCm">{{ pet.sizeCm }}cm</span>
-                        <span class="publication-badge" *ngIf="petsInPublication.has(pet.id)">Ya en publicación</span>
                     </div>
                     <button class="btn-edit-neo" (click)="editPet(pet)">✏️ Editar</button>
                 </div>
