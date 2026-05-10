@@ -206,6 +206,13 @@
     gap: 12px;
 }
 
+.field-error {
+    margin-top: -8px;
+    color: #d12f2f;
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .neo-form input,
 .neo-form select,
 .neo-form textarea {

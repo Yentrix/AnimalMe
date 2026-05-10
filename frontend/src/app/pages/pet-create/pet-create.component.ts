@@ -28,6 +28,8 @@ export class PetManagementComponent implements OnInit {
   allBreeds: any[] = [];
   petsInPublication = new Set<number>();
   iconPencil: SafeHtml;
+  ageInput = '';
+  sizeCmInput = '';
 
 
   constructor(
@@ -46,11 +48,11 @@ export class PetManagementComponent implements OnInit {
 
   initForm() {
     this.petForm = this.fb.group({
-      name: ['', [Validators.required]],
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
       // Los demás son opcionales (sin Validators.required)
-      age: [null],
+      age: [null, [Validators.min(0), Validators.max(40)]],
       sex: [''],
-      sizeCm: [null],
+      sizeCm: [null, [Validators.min(1), Validators.max(250)]],
       description: [''],
       speciesName: [''],
       breedName: [{ value: '', disabled: true }]
@@ -118,6 +120,8 @@ export class PetManagementComponent implements OnInit {
       speciesName: pet.species?.name,
       breedName: pet.breed?.name
     });
+    this.ageInput = this.formatWithUnit(pet.age, 'años');
+    this.sizeCmInput = this.formatWithUnit(pet.sizeCm, 'cm');
 
     // Si la mascota tiene imagen, mostramos la preview
     if (pet.images && pet.images.length > 0) {
@@ -157,17 +161,29 @@ export class PetManagementComponent implements OnInit {
   }
 
   savePet() {
-    if (this.petForm.invalid) return;
+    const ageValue = this.parseNumberInput(this.ageInput);
+    const sizeValue = this.parseNumberInput(this.sizeCmInput);
 
-    const ageValue = this.petForm.get('age')?.value;
-    const sizeValue = this.petForm.get('sizeCm')?.value;
+    this.petForm.patchValue({
+      age: ageValue,
+      sizeCm: sizeValue
+    }, { emitEvent: false });
+
+    this.petForm.get('name')?.markAsTouched();
+    this.petForm.get('age')?.markAsTouched();
+    this.petForm.get('sizeCm')?.markAsTouched();
+    this.petForm.updateValueAndValidity();
+
+    if (this.petForm.invalid) {
+      return;
+    }
 
     const formData = new FormData();
     const petData = {
       name: this.petForm.get('name')?.value,
-      age: ageValue === '' || ageValue == null ? null : Number(ageValue),
+      age: ageValue,
       sex: this.petForm.get('sex')?.value,
-      sizeCm: sizeValue === '' || sizeValue == null ? null : Number(sizeValue),
+      sizeCm: sizeValue,
       description: this.petForm.get('description')?.value
     };
 
@@ -212,7 +228,47 @@ export class PetManagementComponent implements OnInit {
     this.selectedPetId = null;
     this.imagePreview = null;
     this.selectedFile = null;
+    this.ageInput = '';
+    this.sizeCmInput = '';
     this.petForm.reset();
+  }
+
+  onAgeFocus(): void {
+    const value = this.parseNumberInput(this.ageInput);
+    this.ageInput = value == null ? '' : `${value}`;
+  }
+
+  onAgeBlur(): void {
+    const value = this.parseNumberInput(this.ageInput);
+    this.petForm.patchValue({ age: value }, { emitEvent: false });
+    this.ageInput = this.formatWithUnit(value, 'años');
+  }
+
+  onAgeInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = this.sanitizeNumericInput(input.value);
+    const value = this.parseNumberInput(sanitized);
+    this.petForm.patchValue({ age: value }, { emitEvent: false });
+    this.ageInput = sanitized;
+  }
+
+  onSizeCmFocus(): void {
+    const value = this.parseNumberInput(this.sizeCmInput);
+    this.sizeCmInput = value == null ? '' : `${value}`;
+  }
+
+  onSizeCmBlur(): void {
+    const value = this.parseNumberInput(this.sizeCmInput);
+    this.petForm.patchValue({ sizeCm: value }, { emitEvent: false });
+    this.sizeCmInput = this.formatWithUnit(value, 'cm');
+  }
+
+  onSizeCmInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = this.sanitizeNumericInput(input.value);
+    const value = this.parseNumberInput(sanitized);
+    this.petForm.patchValue({ sizeCm: value }, { emitEvent: false });
+    this.sizeCmInput = sanitized;
   }
 
   onSpeciesSearch(event: any) {
@@ -255,5 +311,45 @@ export class PetManagementComponent implements OnInit {
       .replace(/[^a-zA-Z0-9 ]/g, "")    // Quita símbolos
       .toLowerCase()
       .trim();
+  }
+
+  private parseNumberInput(value: unknown): number | null {
+    if (value == null) {
+      return null;
+    }
+
+    const text = String(value).trim();
+    if (text.length === 0) {
+      return null;
+    }
+
+    const match = text.match(/\d+/);
+    if (!match) {
+      return null;
+    }
+
+    const parsed = Number(match[0]);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private sanitizeNumericInput(value: string): string {
+    return value.replace(/[^\d]/g, '').slice(0, 3);
+  }
+
+  private formatWithUnit(value: unknown, unit: string): string {
+    const numberValue = this.parseNumberInput(value);
+    return numberValue == null ? '' : `${numberValue} ${unit}`;
+  }
+
+  get nameControl() {
+    return this.petForm.get('name');
+  }
+
+  get ageControl() {
+    return this.petForm.get('age');
+  }
+
+  get sizeCmControl() {
+    return this.petForm.get('sizeCm');
   }
 }

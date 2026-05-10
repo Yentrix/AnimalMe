@@ -53,6 +53,15 @@
 
             <form [formGroup]="petForm" class="neo-form">
                 <input type="text" formControlName="name" placeholder="Nombre de la mascota (Obligatorio)">
+                <small class="field-error" *ngIf="nameControl?.touched && nameControl?.errors?.['required']">
+                    El nombre es obligatorio.
+                </small>
+                <small class="field-error" *ngIf="nameControl?.touched && nameControl?.errors?.['minlength']">
+                    El nombre debe tener al menos 2 caracteres.
+                </small>
+                <small class="field-error" *ngIf="nameControl?.touched && nameControl?.errors?.['maxlength']">
+                    El nombre no puede superar los 60 caracteres.
+                </small>
 
                 <div class="input-row">
                     <div class="autocomplete-wrapper">
@@ -77,9 +86,33 @@
                 </div>
 
                 <div class="input-row">
-                    <input type="number" formControlName="age" placeholder="Edad (años)">
-                    <input type="number" formControlName="sizeCm" placeholder="Tamaño en cm">
+                    <input
+                        type="text"
+                        [value]="ageInput"
+                        (input)="onAgeInput($event)"
+                        (focus)="onAgeFocus()"
+                        (blur)="onAgeBlur()"
+                        placeholder="Edad (años)">
+                    <input
+                        type="text"
+                        [value]="sizeCmInput"
+                        (input)="onSizeCmInput($event)"
+                        (focus)="onSizeCmFocus()"
+                        (blur)="onSizeCmBlur()"
+                        placeholder="Tamaño en cm">
                 </div>
+                <small class="field-error" *ngIf="ageControl?.touched && ageControl?.errors?.['min']">
+                    La edad no puede ser negativa.
+                </small>
+                <small class="field-error" *ngIf="ageControl?.touched && ageControl?.errors?.['max']">
+                    La edad maxima permitida es 40 años.
+                </small>
+                <small class="field-error" *ngIf="sizeCmControl?.touched && sizeCmControl?.errors?.['min']">
+                    La longitud debe ser mayor que 0 cm.
+                </small>
+                <small class="field-error" *ngIf="sizeCmControl?.touched && sizeCmControl?.errors?.['max']">
+                    La longitud maxima permitida es 250 cm.
+                </small>
 
                 <div class="input-row">
                     <select formControlName="sex">

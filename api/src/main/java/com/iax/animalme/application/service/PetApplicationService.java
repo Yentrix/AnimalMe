@@ -65,6 +65,7 @@ public class PetApplicationService {
         // Usamos toBuilder para mantener el ID y el Owner originales
         Pet petToSave = oldPet.toBuilder()
                 .name(petDetails.getName())
+            .age(petDetails.getAge())
                 .sex(petDetails.getSex())
                 .sizeCm(petDetails.getSizeCm())
                 .description(petDetails.getDescription())
