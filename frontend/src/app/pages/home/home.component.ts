@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { PublicationService, PublicationSummary } from '../../services/publication/publication.service';
+import { PublicationPet, PublicationService, PublicationSummary } from '../../services/publication/publication.service';
 
 interface AuthUser {
   id?: number;
@@ -15,7 +15,13 @@ interface AuthUser {
   styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnInit {
+  allPublications: PublicationSummary[] = [];
   publications: PublicationSummary[] = [];
+  searchPetName = '';
+  selectedSpecies = '';
+  selectedBreed = '';
+  speciesOptions: string[] = [];
+  breedOptions: string[] = [];
   publicationImageIndex: Record<number, number> = {};
   isLoading = false;
   errorMessage = '';
@@ -45,12 +51,16 @@ export class HomeComponent implements OnInit {
 
     this.publicationService.getActivePublications().subscribe({
       next: (publications) => {
-        this.publications = publications;
-        this.publications.forEach(pub => {
+        this.allPublications = publications;
+        this.allPublications.forEach(pub => {
           if (this.publicationImageIndex[pub.id] == null) {
             this.publicationImageIndex[pub.id] = 0;
           }
         });
+
+        this.speciesOptions = this.extractSpeciesOptions(this.allPublications);
+        this.refreshBreedOptions();
+        this.applyFilters();
         this.isLoading = false;
       },
       error: () => {
@@ -58,6 +68,47 @@ export class HomeComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  applyFilters(): void {
+    const nameNeedle = this.searchPetName.trim().toLowerCase();
+    const speciesNeedle = this.selectedSpecies.trim().toLowerCase();
+    const breedNeedle = this.selectedBreed.trim().toLowerCase();
+
+    this.publications = this.allPublications.filter(publication => {
+      const pets = publication.pets ?? [];
+      return pets.some(pet => {
+        const petName = (pet.name ?? '').toLowerCase();
+        const petSpecies = (pet.species?.name ?? '').toLowerCase();
+        const petBreed = (pet.breed?.name ?? '').toLowerCase();
+
+        const matchesName = nameNeedle.length === 0 || petName.includes(nameNeedle);
+        const matchesSpecies = speciesNeedle.length === 0 || petSpecies.includes(speciesNeedle);
+        const matchesBreed = breedNeedle.length === 0 || petBreed.includes(breedNeedle);
+
+        return matchesName && matchesSpecies && matchesBreed;
+      });
+    });
+  }
+
+  onSpeciesChange(): void {
+    this.refreshBreedOptions();
+    if (this.selectedBreed && !this.breedOptions.includes(this.selectedBreed)) {
+      this.selectedBreed = '';
+    }
+    this.applyFilters();
+  }
+
+  onBreedChange(): void {
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.searchPetName = '';
+    this.selectedSpecies = '';
+    this.selectedBreed = '';
+    this.refreshBreedOptions();
+    this.applyFilters();
   }
 
   getCurrentImage(publication: PublicationSummary): string {
@@ -136,6 +187,10 @@ export class HomeComponent implements OnInit {
     return images[safeIndex]?.url || 'assets/placeholder.png';
   }
 
+  getPetDetailRows(publication: PublicationSummary): PublicationPet[] {
+    return publication.pets ?? [];
+  }
+
   submitAdoptionRequest(): void {
     if (!this.selectedPublication) {
       return;
@@ -200,6 +255,41 @@ export class HomeComponent implements OnInit {
 
     const user = JSON.parse(userJson) as AuthUser;
     return user.id ?? null;
+  }
+
+  private extractSpeciesOptions(publications: PublicationSummary[]): string[] {
+    const speciesSet = new Set<string>();
+    publications.forEach(publication => {
+      (publication.pets ?? []).forEach(pet => {
+        const name = pet.species?.name?.trim();
+        if (name) {
+          speciesSet.add(name);
+        }
+      });
+    });
+    return Array.from(speciesSet).sort((a, b) => a.localeCompare(b));
+  }
+
+  private refreshBreedOptions(): void {
+    const speciesNeedle = this.selectedSpecies.trim().toLowerCase();
+    const breedSet = new Set<string>();
+
+    this.allPublications.forEach(publication => {
+      (publication.pets ?? []).forEach(pet => {
+        const speciesName = (pet.species?.name ?? '').toLowerCase();
+        const breedName = pet.breed?.name?.trim();
+
+        if (!breedName) {
+          return;
+        }
+
+        if (!speciesNeedle || speciesName.includes(speciesNeedle)) {
+          breedSet.add(breedName);
+        }
+      });
+    });
+
+    this.breedOptions = Array.from(breedSet).sort((a, b) => a.localeCompare(b));
   }
 
 }

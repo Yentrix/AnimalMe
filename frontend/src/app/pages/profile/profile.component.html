@@ -1,1 +1,75 @@
-<p>profile works!</p>
+<section class="profile-page">
+	<header class="page-header">
+		<h1>Editar perfil</h1>
+		<p>Actualiza tus datos de contacto y seguridad de la cuenta.</p>
+	</header>
+
+	<div class="loading" *ngIf="isLoading">Cargando perfil...</div>
+
+	<article class="card" *ngIf="!isLoading">
+		<h2>Datos personales</h2>
+		<form class="form-grid" (ngSubmit)="saveProfile()">
+			<div class="field">
+				<label for="firstName">Nombre</label>
+				<input id="firstName" type="text" name="firstName" [(ngModel)]="profileData.firstName" required>
+			</div>
+
+			<div class="field">
+				<label for="email">Correo electronico</label>
+				<input id="email" type="email" name="email" [(ngModel)]="profileData.email" required>
+			</div>
+
+			<div class="field">
+				<label for="contactEmail">Correo de contacto</label>
+				<input id="contactEmail" type="email" name="contactEmail" [(ngModel)]="profileData.contactEmail">
+			</div>
+
+			<div class="field">
+				<label for="contactPhone">Telefono de contacto</label>
+				<input id="contactPhone" type="text" name="contactPhone" [(ngModel)]="profileData.contactPhone">
+			</div>
+
+			<span class="error-text" *ngIf="profileError">{{ profileError }}</span>
+			<span class="success-text" *ngIf="profileSuccess">{{ profileSuccess }}</span>
+
+			<button type="submit" class="btn-save" [disabled]="isSavingProfile">
+				{{ isSavingProfile ? 'Guardando...' : 'Guardar cambios' }}
+			</button>
+		</form>
+	</article>
+
+	<article class="card special-card" *ngIf="!isLoading">
+		<h2>Cambiar contraseña</h2>
+		<form class="form-grid" (ngSubmit)="changePassword()">
+			<div class="field">
+				<label for="currentPassword">Contraseña actual</label>
+				<input id="currentPassword" type="password" name="currentPassword" [(ngModel)]="passwordData.currentPassword" required>
+			</div>
+
+			<div class="field">
+				<label for="newPassword">Nueva contraseña</label>
+				<input id="newPassword" type="password" name="newPassword" [(ngModel)]="passwordData.newPassword" required>
+				<div class="password-strength" *ngIf="passwordData.newPassword.length > 0">
+					<div class="strength-track">
+						<span class="strength-fill" [style.width.%]="passwordStrengthPercent"></span>
+					</div>
+					<small>Fuerza: {{ passwordStrengthLabel }}</small>
+				</div>
+				<span class="error-text" *ngIf="newPasswordTooShort">La contraseña debe tener al menos 8 caracteres.</span>
+			</div>
+
+			<div class="field">
+				<label for="confirmNewPassword">Repetir nueva contraseña</label>
+				<input id="confirmNewPassword" type="password" name="confirmNewPassword" [(ngModel)]="passwordData.confirmNewPassword" required>
+				<span class="error-text" *ngIf="passwordsMismatch">Las contraseñas no coinciden.</span>
+			</div>
+
+			<span class="error-text" *ngIf="passwordError">{{ passwordError }}</span>
+			<span class="success-text" *ngIf="passwordSuccess">{{ passwordSuccess }}</span>
+
+			<button type="submit" class="btn-save" [disabled]="isSavingPassword || !canSubmitPassword">
+				{{ isSavingPassword ? 'Actualizando...' : 'Cambiar contraseña' }}
+			</button>
+		</form>
+	</article>
+</section>

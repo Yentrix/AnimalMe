@@ -28,6 +28,11 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
 
+  syncUser(user: any) {
+    this.userSubject.next(user);
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
   logout() {
     this.userSubject.next(null);
     localStorage.removeItem('user');

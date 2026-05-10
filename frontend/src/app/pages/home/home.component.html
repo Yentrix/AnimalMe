@@ -4,6 +4,52 @@
 		<p>Explora mascotas en adopcion, revisa sus fotos y enviales una solicitud.</p>
 	</header>
 
+	<section class="filters-card">
+		<div class="filter-field">
+			<label for="petNameSearch">Buscar por nombre de mascota</label>
+			<input
+				id="petNameSearch"
+				type="text"
+				[(ngModel)]="searchPetName"
+				(ngModelChange)="applyFilters()"
+				placeholder="Ej: Luna"
+			/>
+		</div>
+
+		<div class="filter-field">
+			<label for="speciesInput">Especie</label>
+			<input
+				id="speciesInput"
+				type="text"
+				list="speciesList"
+				[(ngModel)]="selectedSpecies"
+				(ngModelChange)="onSpeciesChange()"
+				placeholder="Selecciona o escribe"
+			/>
+			<datalist id="speciesList">
+				<option *ngFor="let species of speciesOptions" [value]="species"></option>
+			</datalist>
+		</div>
+
+		<div class="filter-field">
+			<label for="breedInput">Raza</label>
+			<input
+				id="breedInput"
+				type="text"
+				list="breedList"
+				[(ngModel)]="selectedBreed"
+				(ngModelChange)="onBreedChange()"
+				placeholder="Selecciona o escribe"
+				[disabled]="breedOptions.length === 0"
+			/>
+			<datalist id="breedList">
+				<option *ngFor="let breed of breedOptions" [value]="breed"></option>
+			</datalist>
+		</div>
+
+		<button type="button" class="btn-clear" (click)="clearFilters()">Limpiar filtros</button>
+	</section>
+
 	<div class="form-feedback" *ngIf="errorMessage && !isLightboxOpen">{{ errorMessage }}</div>
 	<div class="form-success" *ngIf="successMessage && !isLightboxOpen">{{ successMessage }}</div>
 
@@ -36,6 +82,9 @@
 				<p class="meta">{{ publication.createdAt | date:'mediumDate' }} · {{ adoptionStatusLabel[publication.adoptionStatus] }}</p>
 				<p class="author">Publicado por {{ getAuthorName(publication) }}</p>
 				<p class="description">{{ publication.description || 'Sin descripcion.' }}</p>
+				<div class="pet-badges" *ngIf="(publication.pets?.length ?? 0) > 0">
+					<span class="pet-badge" *ngFor="let pet of publication.pets">{{ pet.name }}</span>
+				</div>
 			</div>
 		</article>
 	</div>
@@ -46,62 +95,84 @@
 
 	<div class="modal-overlay" *ngIf="isLightboxOpen && selectedPublication as publication">
 		<div class="modal-card">
-			<header class="modal-header">
-				<h2>{{ publication.title }}</h2>
-				<p>{{ publication.createdAt | date:'medium' }}</p>
-			</header>
+			<div class="modal-scroll-content">
+				<header class="modal-header">
+					<h2>{{ publication.title }}</h2>
+					<p>{{ publication.createdAt | date:'medium' }}</p>
+				</header>
 
-			<div class="modal-image-wrapper">
-				<img [src]="getModalImage()" (error)="handleImageError($event)" [alt]="publication.title" />
-				<button
-					type="button"
-					class="image-nav prev"
-					*ngIf="(publication.images?.length ?? 0) > 1"
-					(click)="previousModalImage()"
-				>
-					‹
-				</button>
-				<button
-					type="button"
-					class="image-nav next"
-					*ngIf="(publication.images?.length ?? 0) > 1"
-					(click)="nextModalImage()"
-				>
-					›
-				</button>
+				<div class="modal-image-wrapper">
+					<img [src]="getModalImage()" (error)="handleImageError($event)" [alt]="publication.title" />
+					<button
+						type="button"
+						class="image-nav prev"
+						*ngIf="(publication.images?.length ?? 0) > 1"
+						(click)="previousModalImage()"
+					>
+						‹
+					</button>
+					<button
+						type="button"
+						class="image-nav next"
+						*ngIf="(publication.images?.length ?? 0) > 1"
+						(click)="nextModalImage()"
+					>
+						›
+					</button>
+				</div>
+
+				<p class="modal-description">{{ publication.description || 'Sin descripcion.' }}</p>
+				<p class="modal-author">Contacto: {{ publication.author?.contactEmail || publication.author?.email || 'Sin email' }}</p>
+
+				<section class="pet-details-section">
+					<h3>Detalles de las mascotas</h3>
+					<div class="pet-details-list" *ngIf="getPetDetailRows(publication).length > 0; else noPetDetails">
+						<article class="pet-detail-card" *ngFor="let pet of getPetDetailRows(publication)">
+							<h4>{{ pet.name }}</h4>
+							<p>Especie: {{ pet.species?.name || 'No definida' }}</p>
+							<p>Raza: {{ pet.breed?.name || 'No definida' }}</p>
+							<p>Sexo: {{ pet.sex || 'No definido' }}</p>
+							<p>Edad: {{ pet.age ?? 'No definida' }} años</p>
+							<p>Estatura: {{ pet.sizeCm ?? 'No definida' }} cm</p>
+							<p>{{ pet.description || 'Sin descripcion adicional.' }}</p>
+						</article>
+					</div>
+					<ng-template #noPetDetails>
+						<p class="owner-note">No hay detalles de mascotas en esta publicación.</p>
+					</ng-template>
+				</section>
 			</div>
 
-			<p class="modal-description">{{ publication.description || 'Sin descripcion.' }}</p>
-			<p class="modal-author">Contacto: {{ publication.author?.contactEmail || publication.author?.email || 'Sin email' }}</p>
+			<div class="modal-footer-fixed">
+				<div class="form-feedback" *ngIf="errorMessage">{{ errorMessage }}</div>
+				<div class="form-success" *ngIf="successMessage">{{ successMessage }}</div>
 
-			<div class="form-feedback" *ngIf="errorMessage">{{ errorMessage }}</div>
-			<div class="form-success" *ngIf="successMessage">{{ successMessage }}</div>
+				<section class="request-panel" *ngIf="!isPublicationOwner(publication)">
+					<ng-container *ngIf="hasSession(); else loginNeeded">
+						<label for="requestMessage">Mensaje para solicitud de adopcion (opcional)</label>
+						<textarea
+							id="requestMessage"
+							rows="3"
+							[(ngModel)]="requestMessage"
+							placeholder="Cuenta por que quieres adoptar esta mascota"
+						></textarea>
+						<button type="button" class="btn-save" (click)="submitAdoptionRequest()" [disabled]="isSubmittingRequest">
+							{{ isSubmittingRequest ? 'Enviando...' : 'Enviar solicitud' }}
+						</button>
+					</ng-container>
+				</section>
 
-			<section class="request-panel" *ngIf="!isPublicationOwner(publication)">
-				<ng-container *ngIf="hasSession(); else loginNeeded">
-					<label for="requestMessage">Mensaje para solicitud de adopcion (opcional)</label>
-					<textarea
-						id="requestMessage"
-						rows="4"
-						[(ngModel)]="requestMessage"
-						placeholder="Cuenta por que quieres adoptar esta mascota"
-					></textarea>
-					<button type="button" class="btn-save" (click)="submitAdoptionRequest()" [disabled]="isSubmittingRequest">
-						{{ isSubmittingRequest ? 'Enviando...' : 'Enviar solicitud' }}
-					</button>
-				</ng-container>
-			</section>
+				<p class="owner-note" *ngIf="isPublicationOwner(publication)">
+					Esta es tu publicacion. Puedes gestionar solicitudes desde el apartado Publicaciones.
+				</p>
 
-			<p class="owner-note" *ngIf="isPublicationOwner(publication)">
-				Esta es tu publicacion. Puedes gestionar solicitudes desde el apartado Publicaciones.
-			</p>
+				<ng-template #loginNeeded>
+					<p class="owner-note">Inicia sesion para enviar una solicitud de adopcion.</p>
+				</ng-template>
 
-			<ng-template #loginNeeded>
-				<p class="owner-note">Inicia sesion para enviar una solicitud de adopcion.</p>
-			</ng-template>
-
-			<div class="modal-actions">
-				<button type="button" class="btn-cancel" (click)="closeLightbox()">Cerrar</button>
+				<div class="modal-actions">
+					<button type="button" class="btn-cancel" (click)="closeLightbox()">Cerrar</button>
+				</div>
 			</div>
 		</div>
 	</div>

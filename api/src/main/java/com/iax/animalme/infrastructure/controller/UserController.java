@@ -1,19 +1,24 @@
 package com.iax.animalme.infrastructure.controller;
 
-import com.iax.animalme.domain.repository.UserRepository;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.iax.animalme.application.dto.UserPasswordUpdateDto;
+import com.iax.animalme.application.dto.UserProfileUpdateDto;
 import com.iax.animalme.application.service.UserApplicationService;
 import com.iax.animalme.domain.enums.UserRole;
 import com.iax.animalme.domain.model.User;
-
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import com.iax.animalme.domain.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/users")
@@ -57,6 +62,22 @@ public class UserController {
     @GetMapping("/searchByEmail")
     public List<User> searchByEmail(@RequestParam String email) {
         return userApplicationService.listByEmail(email);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateProfile(@PathVariable Long id, @RequestBody UserProfileUpdateDto profile) {
+        return ResponseEntity.ok(userApplicationService.updateProfile(id, profile));
+    }
+
+    @PutMapping("/{id}/password")
+    public ResponseEntity<Void> updatePassword(@PathVariable Long id, @RequestBody UserPasswordUpdateDto passwordUpdate) {
+        userApplicationService.updatePassword(id, passwordUpdate);
+        return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, RuntimeException.class})
+    public ResponseEntity<Map<String, String>> handleException(Exception exception) {
+        return ResponseEntity.badRequest().body(Map.of("message", exception.getMessage()));
     }
 
 }

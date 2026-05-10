@@ -15,6 +15,12 @@ export interface PublicationAuthor {
 export interface PublicationPet {
   id: number;
   name: string;
+  age?: number;
+  sex?: string;
+  sizeCm?: number;
+  description?: string;
+  species?: { id?: number; name?: string };
+  breed?: { id?: number; name?: string };
 }
 
 export interface PublicationImage {
