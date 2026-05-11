@@ -1,42 +1,64 @@
 services:
-
+  # Base de datos MySQL
   animalme-db:
-    image: mariadb:11
+    image: mysql:8.0
     container_name: animalme-db
     restart: always
+    command: --default-authentication-plugin=mysql_native_password
     environment:
-      MARIADB_ROOT_PASSWORD: root
-      MARIADB_DATABASE: animalme
-      MARIADB_USER: animalme
-      MARIADB_PASSWORD: animalme123
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: animalme
+      MYSQL_USER: animalme
+      MYSQL_PASSWORD: password
     volumes:
       - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - animalme-network
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
-      timeout: 5s
+      timeout: 10s
       retries: 10
+      start_period: 5s
 
+  # API Spring Boot
   animalme-api:
     build: ./api
     container_name: animalme-api
-    depends_on:
-      animalme-db:
-        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://animalme-db:3306/animalme
-      SPRING_DATASOURCE_USERNAME: animalme
-      SPRING_DATASOURCE_PASSWORD: animalme123
+      SPRING_DATASOURCE_URL: jdbc:mysql://animalme-db:3306/animalme?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password
+      FILE_BASE_PATH: /app/uploads
+    volumes:
+      - shared_files:/app/uploads
+    depends_on:
+      animalme-db:
+        condition: service_healthy
+    networks:
+      - animalme-network
 
   animalme-frontend:
     build: ./frontend
     container_name: animalme-frontend
     ports:
-      - "80:80"
+      - "4200:80"
     depends_on:
       - animalme-api
+    volumes:
+      - shared_files:/usr/share/nginx/html/uploads:ro
+    networks:
+      - animalme-network
 
 volumes:
   db_data:
+  shared_files:
+
+networks:
+  animalme-network:
+    driver: bridge
+

@@ -13,8 +13,13 @@ RUN npm run build -- --configuration=production
 
 FROM nginx:alpine
 
-COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
+# Directorio para archivos compartidos (uploads)
+RUN mkdir -p /usr/share/nginx/html/uploads
+
+COPY --from=build /app/dist/animalme/browser/ /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+VOLUME ["/usr/share/nginx/html/uploads"]
 
 EXPOSE 80
 

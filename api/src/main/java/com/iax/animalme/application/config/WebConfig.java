@@ -1,16 +1,23 @@
 package com.iax.animalme.application.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Value("${file.base-path:uploads}")
+    private String fileBasePath;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Esto permite que al acceder a http://localhost:8080/uploads/nombre.png funcione
+        String normalizedBasePath = fileBasePath.endsWith("/") ? fileBasePath : fileBasePath + "/";
+
+        // Permite servir archivos subidos desde la ruta configurada
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/") // Asegúrate de que la ruta coincida con donde guardas los archivos
+                .addResourceLocations("file:" + normalizedBasePath)
                 .setCachePeriod(0);
     }
 }

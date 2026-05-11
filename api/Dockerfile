@@ -16,9 +16,12 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 COPY --from=build /build/target/*.jar app.jar
-COPY entrypoint-init-db.sh /app/entrypoint-init-db.sh
-RUN chmod +x /app/entrypoint-init-db.sh
+
+# Directorios para almacenamiento persistente de archivos
+RUN mkdir -p /app/uploads/users /app/uploads/pets /app/uploads/publications
+
+VOLUME ["/app/uploads"]
 
 EXPOSE 8080
 
-ENTRYPOINT ["/app/entrypoint-init-db.sh"]
+CMD ["java", "-jar", "app.jar"]
