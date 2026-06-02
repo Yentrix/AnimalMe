@@ -14,6 +14,7 @@ import { svgIcons } from '../../icons/svg-icons';
   styleUrl: './pet-create.component.css'
 })
 export class PetManagementComponent implements OnInit {
+  readonly petDescriptionMaxLength = 255;
   viewMode: 'list' | 'kanban' = 'kanban';
   imagePreview: string | null = null;
   pets: any[] = [];
@@ -53,7 +54,7 @@ export class PetManagementComponent implements OnInit {
       age: [null, [Validators.min(0), Validators.max(40)]],
       sex: [''],
       sizeCm: [null, [Validators.min(1), Validators.max(250)]],
-      description: [''],
+      description: ['', [Validators.maxLength(this.petDescriptionMaxLength)]],
       speciesName: [''],
       breedName: [{ value: '', disabled: true }]
     });
@@ -351,5 +352,14 @@ export class PetManagementComponent implements OnInit {
 
   get sizeCmControl() {
     return this.petForm.get('sizeCm');
+  }
+
+  get descriptionControl() {
+    return this.petForm.get('description');
+  }
+
+  get petDescriptionLength(): number {
+    const value = this.descriptionControl?.value;
+    return typeof value === 'string' ? value.length : 0;
   }
 }

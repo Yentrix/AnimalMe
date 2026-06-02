@@ -4,6 +4,7 @@ import {
   ElementRef,
   HostListener,
   Inject,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -18,11 +19,12 @@ import {
 
 import { NgClass, AsyncPipe, CommonModule, DOCUMENT } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Observable } from 'rxjs';
+import { Observable, Subscription, catchError, interval, of, startWith, switchMap } from 'rxjs';
 import { ThemeService } from '../../services/theme/theme.service';
 import { svgIcons } from '../../icons/svg-icons';
 import { AuthService } from '../../services/auth/auth.service';
 import { AppNotification, NotificationService } from '../../services/notification/notification.service';
+import { UserProfile, UserService } from '../../services/user/user.service';
 
 export enum SidebarSection {
   ROOT = 0,
@@ -50,7 +52,7 @@ interface SidebarItem {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent implements OnInit, AfterViewInit {
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('notificationWrapper') notificationWrapper?: ElementRef<HTMLElement>;
   user$: Observable<any | null>;
   SidebarSectionEnum = SidebarSection;
@@ -64,6 +66,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   isNotificationPanelOpen = false;
   isLoadingNotifications = false;
   unreadNotificationsCount = 0;
+  private userSubscription?: Subscription;
+  private banStatusPollingSubscription?: Subscription;
+  private hasForcedLogoutForBan = false;
 
   constructor(
     private router: Router,
@@ -71,6 +76,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     private sanitizer: DomSanitizer,
     private authService: AuthService,
     private notificationService: NotificationService,
+    private userService: UserService,
     @Inject(DOCUMENT) private doc: Document
   ) {
     this.isDarkMode$ = this.themeService.isDarkMode$
@@ -78,11 +84,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.authService.user$.subscribe(user => {
+    this.userSubscription = this.authService.user$.subscribe(user => {
       this.updateMenu(user);
       if (user?.id) {
+        this.hasForcedLogoutForBan = false;
+        this.startBanStatusPolling(user.id);
         this.loadNotifications(user.id);
       } else {
+        this.stopBanStatusPolling();
         this.notifications = [];
         this.unreadNotificationsCount = 0;
         this.isNotificationPanelOpen = false;
@@ -144,6 +153,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       if (ev instanceof NavigationEnd)
         this.isMobileSidebarOpen = false;
     });
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription?.unsubscribe();
+    this.stopBanStatusPolling();
   }
 
   logOut() {
@@ -268,6 +282,63 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     } catch {
       return null;
     }
+  }
+
+  private startBanStatusPolling(userId: number): void {
+    this.stopBanStatusPolling();
+
+    this.banStatusPollingSubscription = interval(30000)
+      .pipe(
+        startWith(0),
+        switchMap(() => this.userService.getUserById(userId).pipe(catchError(() => of(null))))
+      )
+      .subscribe(userProfile => {
+        if (!userProfile || this.hasForcedLogoutForBan) {
+          return;
+        }
+
+        if (this.isUserCurrentlyBanned(userProfile)) {
+          this.forceLogoutDueToBan(userProfile);
+        }
+      });
+  }
+
+  private stopBanStatusPolling(): void {
+    this.banStatusPollingSubscription?.unsubscribe();
+    this.banStatusPollingSubscription = undefined;
+  }
+
+  private isUserCurrentlyBanned(user: UserProfile): boolean {
+    if (user.status === 'BANNED_PERMANENT') {
+      return true;
+    }
+
+    if (user.status !== 'BANNED_TEMPORARY') {
+      return false;
+    }
+
+    if (!user.bannedUntil) {
+      return true;
+    }
+
+    return new Date(user.bannedUntil).getTime() > Date.now();
+  }
+
+  private forceLogoutDueToBan(user: UserProfile): void {
+    this.hasForcedLogoutForBan = true;
+
+    let message = 'Tu cuenta ha sido baneada. Se ha cerrado tu sesion.';
+    if (user.status === 'BANNED_TEMPORARY' && user.bannedUntil) {
+      message = `Tu cuenta esta baneada temporalmente hasta ${new Date(user.bannedUntil).toLocaleString()}. Se ha cerrado tu sesion.`;
+    }
+
+    if (user.status === 'BANNED_PERMANENT') {
+      message = 'Tu cuenta ha sido baneada permanentemente. Se ha cerrado tu sesion.';
+    }
+
+    sessionStorage.setItem('banModalMessage', message);
+    this.authService.logout();
+    this.router.navigate(['/auth']);
   }
 
   triggerSidebarAnimation() {

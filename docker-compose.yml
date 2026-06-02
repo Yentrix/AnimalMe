@@ -30,10 +30,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://animalme-db:3306/animalme?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://animalme-db:3306/animalme?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Madrid
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: password
       FILE_BASE_PATH: /app/uploads
+      TZ: Europe/Madrid
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Europe/Madrid
     volumes:
       - shared_files:/app/uploads
     depends_on:

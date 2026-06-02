@@ -35,6 +35,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class PublicationApplicationService {
+    private static final int PUBLICATION_DESCRIPTION_MAX_LENGTH = 255;
     private final PublicationRepository publicationRepository;
     private final ImageRepository imageRepository;
     private final FileStorageService fileStorageService;
@@ -60,6 +61,8 @@ public class PublicationApplicationService {
 
     @Transactional
     public Publication createPublication(PublicationCreateRequestDto request, Long authorId, MultipartFile[] images) throws Exception {
+        validateDescriptionLength(request.getDescription());
+
         if (request.getPetIds() == null || request.getPetIds().isEmpty()) {
             throw new IllegalArgumentException("La publicacion debe incluir al menos una mascota");
         }
@@ -136,6 +139,8 @@ public class PublicationApplicationService {
 
     @Transactional
     public Publication updatePublication(Long publicationId, Long authorId, PublicationUpdateRequestDto request, MultipartFile[] images) throws Exception {
+        validateDescriptionLength(request.getDescription());
+
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new IllegalArgumentException("La publicacion no existe"));
         ensurePublicationAuthor(publication, authorId);
@@ -403,6 +408,17 @@ public class PublicationApplicationService {
         for (Publication publication : publications) {
             Long pendingCount = adoptionRequestRepository.countByPublicationIdAndStatus(publication.getId(), RequestStatus.PENDING);
             publication.setPendingRequestsCount(pendingCount);
+        }
+    }
+
+    private void validateDescriptionLength(String description) {
+        if (description == null) {
+            return;
+        }
+
+        String normalized = description.trim();
+        if (normalized.length() > PUBLICATION_DESCRIPTION_MAX_LENGTH) {
+            throw new IllegalArgumentException("La descripcion de la publicacion no puede superar 255 caracteres");
         }
     }
 }

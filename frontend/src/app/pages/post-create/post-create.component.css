@@ -61,6 +61,17 @@
 	font-weight: 700;
 }
 
+.char-counter {
+	margin-top: -6px;
+	text-align: right;
+	font-size: 12px;
+	opacity: 0.75;
+}
+
+.input-error-inline {
+	margin-top: -6px;
+}
+
 .post-form input,
 .post-form select,
 .post-form textarea {

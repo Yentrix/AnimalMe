@@ -1,6 +1,7 @@
 package com.iax.animalme.application.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -13,6 +14,8 @@ import com.iax.animalme.domain.repository.UserRepository;
 
 @Service
 public class NotificationApplicationService {
+    private static final ZoneId MADRID_ZONE = ZoneId.of("Europe/Madrid");
+
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
@@ -39,7 +42,7 @@ public class NotificationApplicationService {
         notification.setRelatedPublicationId(publicationId);
         notification.setRelatedRequestId(requestId);
         notification.setIsRead(false);
-        notification.setCreatedAt(LocalDateTime.now());
+        notification.setCreatedAt(LocalDateTime.now(MADRID_ZONE));
 
         return notificationRepository.save(notification);
     }
@@ -57,7 +60,7 @@ public class NotificationApplicationService {
 
         if (!Boolean.TRUE.equals(notification.getIsRead())) {
             notification.setIsRead(true);
-            notification.setReadAt(LocalDateTime.now());
+            notification.setReadAt(LocalDateTime.now(MADRID_ZONE));
             notification = notificationRepository.save(notification);
         }
 
@@ -68,7 +71,7 @@ public class NotificationApplicationService {
         ensureUserExists(userId);
 
         List<Notification> unread = notificationRepository.findByRecipientIdAndIsReadFalse(userId);
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(MADRID_ZONE);
 
         unread.forEach(notification -> {
             notification.setIsRead(true);

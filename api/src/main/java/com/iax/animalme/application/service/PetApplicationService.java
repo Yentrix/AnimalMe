@@ -15,6 +15,7 @@ import com.iax.animalme.infrastructure.service.FileStorageService;
 
 @Service
 public class PetApplicationService {
+    private static final int PET_DESCRIPTION_MAX_LENGTH = 255;
 
     private final PetRepository petRepository;
     private final ImageRepository imageRepository;
@@ -32,6 +33,8 @@ public class PetApplicationService {
     }
 
     public Pet createPet(Pet pet, Long ownerId, MultipartFile imageFile) throws Exception {
+        validateDescriptionLength(pet.getDescription());
+
         User owner = userService.findById(ownerId);
         pet.setOwner(owner);
         if (pet.getAdoptionStatus() == null) {
@@ -59,6 +62,8 @@ public class PetApplicationService {
     }
 
     public Pet updatePet(Long id, Pet petDetails, MultipartFile image) throws Exception {
+        validateDescriptionLength(petDetails.getDescription());
+
         Pet oldPet = petRepository.findById(id)
                 .orElseThrow(() -> new Exception("Mascota no encontrada"));
 
@@ -86,5 +91,16 @@ public class PetApplicationService {
         }
 
         return savedPet;
+    }
+
+    private void validateDescriptionLength(String description) {
+        if (description == null) {
+            return;
+        }
+
+        String normalized = description.trim();
+        if (normalized.length() > PET_DESCRIPTION_MAX_LENGTH) {
+            throw new IllegalArgumentException("La descripcion de la mascota no puede superar 255 caracteres");
+        }
     }
 }

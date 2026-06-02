@@ -14,7 +14,16 @@
 				<input id="title" type="text" formControlName="title" [placeholder]="titlePlaceholder" />
 
 				<label for="description">Descripcion</label>
-				<textarea id="description" rows="4" formControlName="description" placeholder="Opcional"></textarea>
+				<textarea
+					id="description"
+					rows="4"
+					formControlName="description"
+					placeholder="Opcional"
+					[attr.maxlength]="publicationDescriptionMaxLength"></textarea>
+				<div class="char-counter">{{ publicationDescriptionLength }}/{{ publicationDescriptionMaxLength }}</div>
+				<div class="input-error input-error-inline" *ngIf="descriptionControl?.touched && descriptionControl?.errors?.['maxlength']">
+					La descripcion no puede superar los {{ publicationDescriptionMaxLength }} caracteres.
+				</div>
 
 				<label for="status">Estado de adopcion</label>
 				<select id="status" formControlName="adoptionStatus">

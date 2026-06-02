@@ -122,7 +122,14 @@
                     </select>
                 </div>
 
-                <textarea formControlName="description" placeholder="Cuéntanos algo sobre ella..."></textarea>
+                <textarea
+                    formControlName="description"
+                    placeholder="Cuéntanos algo sobre ella..."
+                    [attr.maxlength]="petDescriptionMaxLength"></textarea>
+                <div class="char-counter">{{ petDescriptionLength }}/{{ petDescriptionMaxLength }}</div>
+                <small class="field-error" *ngIf="descriptionControl?.touched && descriptionControl?.errors?.['maxlength']">
+                    La descripcion no puede superar los {{ petDescriptionMaxLength }} caracteres.
+                </small>
 
                 <div class="file-upload-field">
                     <label class="file-label">

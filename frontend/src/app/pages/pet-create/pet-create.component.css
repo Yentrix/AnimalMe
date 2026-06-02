@@ -213,6 +213,13 @@
     font-weight: 600;
 }
 
+.char-counter {
+    margin-top: -8px;
+    text-align: right;
+    font-size: 12px;
+    opacity: 0.75;
+}
+
 .neo-form input,
 .neo-form select,
 .neo-form textarea {
