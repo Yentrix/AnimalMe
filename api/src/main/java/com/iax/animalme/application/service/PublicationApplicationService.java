@@ -35,7 +35,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class PublicationApplicationService {
-    private static final int PUBLICATION_DESCRIPTION_MAX_LENGTH = 255;
+    private static final int PUBLICATION_DESCRIPTION_MAX_LENGTH = 800;
     private final PublicationRepository publicationRepository;
     private final ImageRepository imageRepository;
     private final FileStorageService fileStorageService;
@@ -418,7 +418,7 @@ public class PublicationApplicationService {
 
         String normalized = description.trim();
         if (normalized.length() > PUBLICATION_DESCRIPTION_MAX_LENGTH) {
-            throw new IllegalArgumentException("La descripcion de la publicacion no puede superar 255 caracteres");
+            throw new IllegalArgumentException("La descripcion de la publicacion no puede superar 800 caracteres");
         }
     }
 

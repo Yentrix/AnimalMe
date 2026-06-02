@@ -24,6 +24,14 @@
 				<div class="input-error input-error-inline" *ngIf="descriptionControl?.touched && descriptionControl?.errors?.['maxlength']">
 					La descripcion no puede superar los {{ publicationDescriptionMaxLength }} caracteres.
 				</div>
+				<button
+					type="button"
+					class="btn-copy-descriptions"
+					(click)="copyPetDescriptionsIntoPublication()"
+					[disabled]="!canCopyPetDescriptions"
+				>
+					Copiar descripciones de mascotas
+				</button>
 
 				<label for="status">Estado de adopcion</label>
 				<select id="status" formControlName="adoptionStatus">

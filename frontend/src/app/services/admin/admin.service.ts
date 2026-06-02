@@ -17,6 +17,7 @@ export interface AdminUser {
 export interface AdminPet {
   id: number;
   name: string;
+  images?: Array<{ id?: number; url?: string }>;
   species?: { name?: string };
   breed?: { name?: string };
   owner?: AdminUser;

@@ -83,6 +83,34 @@ export class AdminContentComponent implements OnInit {
     });
   }
 
+  getPublicationThumbnailUrl(publication: PublicationSummary): string {
+    const publicationImage = publication.images?.[0]?.url;
+    if (publicationImage && publicationImage.trim().length > 0) {
+      return publicationImage;
+    }
+
+    const petImage = publication.pets?.[0]?.images?.[0]?.url;
+    if (petImage && petImage.trim().length > 0) {
+      return petImage;
+    }
+
+    return 'assets/placeholder.png';
+  }
+
+  getPetThumbnailUrl(pet: AdminPet): string {
+    const petImage = pet.images?.[0]?.url;
+    if (petImage && petImage.trim().length > 0) {
+      return petImage;
+    }
+
+    return 'assets/placeholder.png';
+  }
+
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'assets/placeholder.png';
+  }
+
   private getCurrentUserId(): number | null {
     const raw = localStorage.getItem('user');
     if (!raw) {

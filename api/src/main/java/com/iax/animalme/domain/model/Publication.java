@@ -32,7 +32,7 @@ public class Publication {
     private Long id;
 
     private String title;
-    @Column(length = 255)
+    @Column(length = 800)
     private String description;
     private LocalDateTime createdAt;
 

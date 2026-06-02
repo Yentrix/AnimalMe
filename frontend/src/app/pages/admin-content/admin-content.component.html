@@ -20,9 +20,17 @@
     </div>
 
     <article class="card" *ngFor="let publication of publications">
-      <div>
+      <div class="card-main">
+        <img
+          class="thumb"
+          [src]="getPublicationThumbnailUrl(publication)"
+          (error)="handleImageError($event)"
+          [alt]="publication.title"
+        />
+        <div>
         <h3>{{ publication.title }}</h3>
         <p>{{ publication.description || 'Sin descripcion' }}</p>
+        </div>
       </div>
       <button type="button" class="btn-danger" (click)="deletePublication(publication.id)">Borrar</button>
     </article>
@@ -39,9 +47,17 @@
     </div>
 
     <article class="card" *ngFor="let pet of pets">
-      <div>
+      <div class="card-main">
+        <img
+          class="thumb"
+          [src]="getPetThumbnailUrl(pet)"
+          (error)="handleImageError($event)"
+          [alt]="pet.name"
+        />
+        <div>
         <h3>{{ pet.name }}</h3>
         <p>{{ pet.species?.name || 'Sin especie' }} · {{ pet.breed?.name || 'Sin raza' }}</p>
+        </div>
       </div>
       <button type="button" class="btn-danger" (click)="deletePet(pet.id)">Borrar</button>
     </article>

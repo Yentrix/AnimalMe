@@ -8,5 +8,25 @@
 .list { display: grid; gap: 10px; }
 .card { border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .card h3, .card p { margin: 0; }
+.card-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.thumb { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; border: 1px solid var(--input-border); background: var(--bg-primary); flex: 0 0 auto; }
+.card-main p {
+	position: relative;
+	display: -webkit-box;
+	line-clamp: 3;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+.card-main p::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1.5em;
+	background: linear-gradient(to bottom, rgba(0, 0, 0, 0), var(--bg-secondary));
+	pointer-events: none;
+}
 .btn-danger { border: 1px solid #cb3f3f; background: #d94848; color: #fff; border-radius: 8px; padding: 8px 10px; font-weight: 700; }
 .error { color: #d12f2f; }
