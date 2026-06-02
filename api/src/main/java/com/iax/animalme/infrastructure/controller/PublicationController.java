@@ -120,6 +120,19 @@ public class PublicationController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/adoption-requests/my")
+    public ResponseEntity<List<AdoptionRequest>> getMyPendingRequests(@RequestParam("applicantId") Long applicantId) {
+        return ResponseEntity.ok(publicationService.getMyPendingRequests(applicantId));
+    }
+
+    @DeleteMapping("/adoption-requests/{requestId}/revoke")
+    public ResponseEntity<Void> revokeAdoptionRequest(
+            @PathVariable Long requestId,
+            @RequestParam("applicantId") Long applicantId) {
+        publicationService.revokeAdoptionRequest(requestId, applicantId);
+        return ResponseEntity.noContent().build();
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Void> handleIllegalArgument() {
         return ResponseEntity.badRequest().build();

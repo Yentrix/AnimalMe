@@ -421,4 +421,27 @@ public class PublicationApplicationService {
             throw new IllegalArgumentException("La descripcion de la publicacion no puede superar 255 caracteres");
         }
     }
+
+    public List<AdoptionRequest> getMyPendingRequests(Long applicantId) {
+        if (!userRepository.existsById(applicantId)) {
+            throw new IllegalArgumentException("El usuario no existe");
+        }
+        return adoptionRequestRepository.findByApplicantIdAndStatus(applicantId, RequestStatus.PENDING);
+    }
+
+    @Transactional
+    public void revokeAdoptionRequest(Long requestId, Long applicantId) {
+        AdoptionRequest request = adoptionRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("La solicitud no existe"));
+
+        if (request.getApplicant() == null || !request.getApplicant().getId().equals(applicantId)) {
+            throw new IllegalArgumentException("No tienes permiso para cancelar esta solicitud");
+        }
+
+        if (request.getStatus() != RequestStatus.PENDING) {
+            throw new IllegalArgumentException("Solo puedes cancelar solicitudes pendientes");
+        }
+
+        adoptionRequestRepository.delete(request);
+    }
 }
