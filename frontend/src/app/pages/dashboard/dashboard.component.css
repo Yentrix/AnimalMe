@@ -423,7 +423,7 @@
 }
 
 .page.fade-in {
-    animation: pageFadeIn 0.35s ease-in-out both;
+    animation: pageFadeIn 0.35s ease-in-out;
 }
 
 @keyframes pageFadeIn {

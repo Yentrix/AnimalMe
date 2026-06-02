@@ -65,6 +65,7 @@
 
   <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
+      <button type="button" class="modal-close-btn" (click)="closeDeleteModal()" aria-label="Cerrar">×</button>
       <h3>{{ deleteModalTitle }}</h3>
       <p>{{ deleteModalMessage }}</p>
 
