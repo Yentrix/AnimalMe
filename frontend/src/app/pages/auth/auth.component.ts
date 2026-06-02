@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { LoginComponent } from "../modules/login/login.component";
 import { RegisterComponent } from "../modules/register/register.component";
-import { trigger, transition, style, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -16,15 +15,13 @@ export class AuthComponent {
   isExiting = false;
 
   toggleAuth() {
+    if (this.isExiting) {
+      return;
+    }
     this.isExiting = true;
-
     setTimeout(() => {
       this.isLogin = !this.isLogin;
-
-      setTimeout(() => {
-        this.isExiting = false;
-      }, 50);
-    }, 20);
+      this.isExiting = false;
+    }, 300);
   }
-
 }

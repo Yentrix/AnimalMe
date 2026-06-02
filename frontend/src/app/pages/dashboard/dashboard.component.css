@@ -417,3 +417,22 @@
 .topbar-right {
     min-width: 0;
 }
+
+.page {
+    will-change: opacity, transform;
+}
+
+.page.fade-in {
+    animation: pageFadeIn 0.35s ease-in-out both;
+}
+
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
