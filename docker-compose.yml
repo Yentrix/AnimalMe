@@ -46,7 +46,7 @@ services:
     build: ./frontend
     container_name: animalme-frontend
     ports:
-      - "4200:80"
+      - "80:80"
     depends_on:
       - animalme-api
     volumes:
