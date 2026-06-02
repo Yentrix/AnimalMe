@@ -84,33 +84,16 @@ html {
     overflow-x: hidden;
 }
 
-body.modal-open {
+body:has(.modal-overlay),
+body:has(.modal-backdrop),
+body:has(.ban-modal-backdrop) {
     overflow: hidden !important;
 }
 
-.modal-overlay,
-.modal-backdrop,
-.ban-modal-backdrop {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    padding: 16px !important;
-    z-index: 5000 !important;
-}
-
-.modal-overlay[style*="display: block"],
-.modal-backdrop[style*="display: block"],
-.ban-modal-backdrop[style*="display: block"],
-.modal-overlay:not([style]),
-.modal-backdrop:not([style]),
-.ban-modal-backdrop:not([style]) {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+body:has(.modal-overlay) .page-container,
+body:has(.modal-backdrop) .page-container,
+body:has(.ban-modal-backdrop) .page-container {
+    overflow: hidden !important;
 }
 
 .no-select {
