@@ -426,6 +426,10 @@
     animation: pageFadeIn 0.35s ease-in-out;
 }
 
+.page:not(.fade-in) {
+    transform: none;
+}
+
 @keyframes pageFadeIn {
     from {
         opacity: 0;
