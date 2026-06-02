@@ -98,11 +98,19 @@ body.modal-open {
     left: 0 !important;
     width: 100vw !important;
     height: 100dvh !important;
+    padding: 16px !important;
+    z-index: 5000 !important;
+}
+
+.modal-overlay[style*="display: block"],
+.modal-backdrop[style*="display: block"],
+.ban-modal-backdrop[style*="display: block"],
+.modal-overlay:not([style]),
+.modal-backdrop:not([style]),
+.ban-modal-backdrop:not([style]) {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 16px !important;
-    z-index: 5000 !important;
 }
 
 .no-select {
