@@ -23,6 +23,11 @@ export interface AdminPet {
   owner?: AdminUser;
 }
 
+export interface PetDeletionImpact {
+  linkedPublicationsCount: number;
+  publicationTitles: string[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -83,6 +88,11 @@ export class AdminService {
   deletePet(adminId: number, petId: number): Observable<void> {
     const params = new HttpParams().set('adminId', adminId.toString());
     return this.http.delete<void>(`${this.apiUrl}/pets/${petId}`, { params });
+  }
+
+  getPetDeletionImpact(adminId: number, petId: number): Observable<PetDeletionImpact> {
+    const params = new HttpParams().set('adminId', adminId.toString());
+    return this.http.get<PetDeletionImpact>(`${this.apiUrl}/pets/${petId}/deletion-impact`, { params });
   }
 
   sendNotification(adminId: number, payload: {

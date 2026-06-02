@@ -30,3 +30,59 @@
 }
 .btn-danger { border: 1px solid #cb3f3f; background: #d94848; color: #fff; border-radius: 8px; padding: 8px 10px; font-weight: 700; }
 .error { color: #d12f2f; }
+
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	backdrop-filter: blur(3px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	z-index: 2200;
+}
+
+.modal-card {
+	background: var(--bg-secondary);
+	border: 2px solid var(--border-color);
+	border-radius: 16px;
+	width: 100%;
+	max-width: 520px;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.modal-card h3,
+.modal-card p {
+	margin: 0;
+}
+
+.warn {
+	color: #d12f2f;
+	font-weight: 700;
+}
+
+.impact-list {
+	margin: 0;
+	padding-left: 18px;
+	max-height: 140px;
+	overflow-y: auto;
+}
+
+.modal-actions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+}
+
+.btn-cancel {
+	border: 1px solid var(--border-color);
+	background: transparent;
+	color: var(--text-primary);
+	border-radius: 8px;
+	padding: 8px 10px;
+	font-weight: 700;
+}

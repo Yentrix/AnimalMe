@@ -83,6 +83,13 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/pets/{petId}/deletion-impact")
+    public ResponseEntity<Map<String, Object>> getPetDeletionImpact(
+            @RequestParam("adminId") Long adminId,
+            @PathVariable Long petId) {
+        return ResponseEntity.ok(adminApplicationService.getPetDeletionImpact(adminId, petId));
+    }
+
     @PostMapping("/notifications")
     public ResponseEntity<Map<String, Integer>> sendNotification(
             @RequestParam("adminId") Long adminId,
