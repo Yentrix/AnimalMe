@@ -116,6 +116,31 @@ body:has(.ban-modal-backdrop) .page-container {
     z-index: 5000 !important;
 }
 
+@media (max-width: 900px) {
+    .modal-overlay,
+    .modal-backdrop,
+    .ban-modal-backdrop {
+        padding: 12px !important;
+        align-items: flex-start !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-card,
+    .ban-modal-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - 24px) !important;
+        margin: 0 auto !important;
+        overflow-y: auto !important;
+        border-radius: 14px !important;
+        padding: 14px !important;
+    }
+
+    .confirm-delete-modal {
+        max-width: 100% !important;
+    }
+}
+
 .no-select {
     -webkit-user-select: none;
     -ms-user-select: none;

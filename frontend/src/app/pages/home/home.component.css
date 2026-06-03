@@ -647,6 +647,7 @@
 
 	.modal-image-wrapper {
 		height: 250px;
+		min-height: 200px;
 	}
 
 	.thumb-btn {
@@ -655,7 +656,15 @@
 	}
 
 	.modal-scroll-content {
-		max-height: 52vh;
+		max-height: calc(100dvh - 260px);
+	}
+
+	.modal-card {
+		max-height: calc(100dvh - 24px);
+	}
+
+	.modal-footer-fixed {
+		padding-bottom: 2px;
 	}
 
 	.page-header h1 {
