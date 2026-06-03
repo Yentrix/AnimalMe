@@ -383,7 +383,7 @@
 	height: 36px;
 	border-radius: 999px;
 	border: 1px solid var(--border-color);
-	background: transparent;
+	background: var(--bg-primary);
 	color: var(--text-primary);
 	font-size: 22px;
 	line-height: 1;
@@ -396,7 +396,7 @@
 }
 
 .modal-close-btn:hover {
-	background: var(--hover-bg);
+	background: var(--border-color);
 }
 
 @keyframes modalFade {
