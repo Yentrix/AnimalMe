@@ -419,7 +419,7 @@
 }
 
 .page {
-    will-change: opacity;
+    min-width: 0;
 }
 
 .page.fade-in {
