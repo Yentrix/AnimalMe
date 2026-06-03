@@ -1,0 +1,115 @@
+<section class="post-create-page">
+	<header class="page-header">
+		<div>
+			<h1>{{ pageTitle }}</h1>
+			<p>{{ pageSubtitle }}</p>
+		</div>
+		<a class="back-link" routerLink="/posts">Volver a publicaciones</a>
+	</header>
+
+	<div class="content-grid">
+		<article class="card form-card">
+			<form [formGroup]="postForm" (ngSubmit)="createPublication()" class="post-form">
+				<label for="title">Nombre de la publicacion</label>
+				<input id="title" type="text" formControlName="title" [placeholder]="titlePlaceholder" />
+
+				<label for="description">Descripcion</label>
+				<textarea
+					id="description"
+					rows="4"
+					formControlName="description"
+					placeholder="Opcional"
+					[attr.maxlength]="publicationDescriptionMaxLength"></textarea>
+				<div class="char-counter">{{ publicationDescriptionLength }}/{{ publicationDescriptionMaxLength }}</div>
+				<div class="input-error input-error-inline" *ngIf="descriptionControl?.touched && descriptionControl?.errors?.['maxlength']">
+					La descripcion no puede superar los {{ publicationDescriptionMaxLength }} caracteres.
+				</div>
+				<button
+					type="button"
+					class="btn-copy-descriptions"
+					(click)="copyPetDescriptionsIntoPublication()"
+					[disabled]="!canCopyPetDescriptions"
+				>
+					Copiar descripciones de mascotas
+				</button>
+
+				<label for="status">Estado de adopcion</label>
+				<select id="status" formControlName="adoptionStatus">
+					<option *ngFor="let status of adoptionStatuses" [value]="status">
+						{{ statusLabels[status] }}
+					</option>
+				</select>
+
+				<div class="file-upload-field">
+					<label class="file-label" for="imagesInput">
+						<span class="icon">📷</span>
+						Agregar imagenes adicionales
+						<input id="imagesInput" type="file" multiple accept="image/*" (change)="onImagesSelected($event)" hidden />
+					</label>
+					<small>Las imagenes de mascotas asociadas se incluyen por defecto.</small>
+				</div>
+
+				<div class="form-feedback" *ngIf="errorMessage">{{ errorMessage }}</div>
+				<div class="form-success" *ngIf="successMessage">{{ successMessage }}</div>
+
+				<button type="submit" class="btn-primary" [disabled]="isSubmitting">
+					{{ submitLabel }}
+				</button>
+			</form>
+		</article>
+
+		<article class="card pets-card">
+			<div class="pets-header">
+				<h2>Mascotas asociadas</h2>
+				<a class="add-pet-link" routerLink="/pets">Crear mascota</a>
+			</div>
+			<p>Selecciona al menos una mascota de tu perfil.</p>
+
+			<div class="pet-list" *ngIf="availablePets.length > 0; else noPets">
+				<label class="pet-item" *ngFor="let pet of availablePets">
+					<input
+						type="checkbox"
+						[checked]="selectedPetIds.includes(pet.id)"
+						(change)="togglePetSelection(pet.id, $any($event.target).checked)"
+					/>
+					<div class="pet-data">
+						<strong>{{ pet.name }}</strong>
+						<span>{{ pet.species?.name || 'Especie sin definir' }} · {{ pet.breed?.name || 'Raza sin definir' }}</span>
+					</div>
+				</label>
+			</div>
+
+			<ng-template #noPets>
+				<div class="empty-state">No tienes mascotas disponibles para asociar en esta publicacion.</div>
+			</ng-template>
+
+			<div class="input-error" *ngIf="selectedPetErrorVisible">Debes seleccionar al menos una mascota.</div>
+		</article>
+	</div>
+
+	<article class="card gallery-card">
+		<h2>Imagenes de la publicacion</h2>
+		<p>Incluye fotos de mascotas y tambien las que subas manualmente.</p>
+
+		<div class="gallery-grid" *ngIf="previewImages.length > 0; else noImages">
+			<figure class="preview-item" *ngFor="let image of previewImages">
+				<img [src]="image.url" [alt]="image.name" />
+				<figcaption>
+					<span>{{ image.source === 'pet' ? 'Mascota' : (image.source === 'existing' ? 'Actual' : 'Subida') }}</span>
+					<button
+						*ngIf="image.source !== 'pet'"
+						type="button"
+						class="remove-btn"
+						(click)="removeUploadedImage(image)"
+					>
+						Quitar
+					</button>
+				</figcaption>
+			</figure>
+		</div>
+
+		<ng-template #noImages>
+			<div class="empty-state">Aun no hay imagenes seleccionadas.</div>
+		</ng-template>
+	</article>
+</section>

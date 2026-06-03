@@ -1,0 +1,237 @@
+<section class="home-page">
+	<header class="page-header">
+		<h1>Publicaciones de adopcion</h1>
+		<p>Explora mascotas en adopcion, revisa sus fotos y enviales una solicitud.</p>
+	</header>
+
+	<section class="filters-card" role="search" aria-label="Filtros de publicaciones">
+		<button
+			type="button"
+			class="icon-btn favorite-filter-btn left-favorite-btn"
+			(click)="toggleFavoritesFilter()"
+			[class.active]="showOnlyFavorites"
+			aria-label="Filtrar favoritos"
+		>
+			<span class="svg-icon" [innerHTML]="showOnlyFavorites ? sanitizedIcons.ICON_HEART_FILLED : sanitizedIcons.ICON_HEART_OUTLINE"></span>
+		</button>
+
+		<div class="filter-field main-search">
+			<label class="sr-only" for="petNameSearch">Buscar por nombre de mascota</label>
+			<input
+				id="petNameSearch"
+				type="text"
+				[(ngModel)]="searchDraftPetName"
+				placeholder="Que mascota buscas"
+			/>
+		</div>
+
+		<div class="filter-field">
+			<label class="sr-only" for="speciesInput">Especie</label>
+			<input
+				id="speciesInput"
+				type="text"
+				list="speciesList"
+				[(ngModel)]="selectedSpeciesDraft"
+				(ngModelChange)="onSpeciesChange()"
+				placeholder="Especie"
+			/>
+			<datalist id="speciesList">
+				<option *ngFor="let species of speciesOptions" [value]="species"></option>
+			</datalist>
+		</div>
+
+		<div class="filter-field">
+			<label class="sr-only" for="breedInput">Raza</label>
+			<input
+				id="breedInput"
+				type="text"
+				list="breedList"
+				[(ngModel)]="selectedBreedDraft"
+				(ngModelChange)="onBreedChange()"
+				placeholder="Raza"
+				[disabled]="breedOptions.length === 0"
+			/>
+			<datalist id="breedList">
+				<option *ngFor="let breed of breedOptions" [value]="breed"></option>
+			</datalist>
+		</div>
+
+		<button type="button" class="icon-btn clear-btn" (click)="clearFilters()" aria-label="Limpiar filtros">
+			<span class="svg-icon" [innerHTML]="sanitizedIcons.ICON_CLEAR"></span>
+		</button>
+
+		<button
+			type="button"
+			class="icon-btn search-btn"
+			(click)="applySearchFilters()"
+			aria-label="Buscar publicaciones"
+		>
+			<span class="svg-icon" [innerHTML]="sanitizedIcons.ICON_SEARCH"></span>
+		</button>
+	</section>
+
+	<div class="form-feedback" *ngIf="errorMessage && !isLightboxOpen">{{ errorMessage }}</div>
+	<div class="form-success" *ngIf="successMessage && !isLightboxOpen">{{ successMessage }}</div>
+
+	<div class="loading" *ngIf="isLoading">Cargando publicaciones...</div>
+
+	<div class="publications-grid" *ngIf="!isLoading && publications.length > 0">
+		<article class="publication-card" *ngFor="let publication of publications" (click)="openLightbox(publication)">
+			<div class="card-image">
+				<button
+					type="button"
+					class="favorite-card-btn"
+					*ngIf="hasSession() && !isPublicationOwner(publication)"
+					(click)="toggleFavoritePublication(publication, $event)"
+					[attr.aria-label]="isFavorite(publication) ? 'Quitar de favoritos' : 'Guardar en favoritos'"
+				>
+					<span class="svg-icon" [innerHTML]="isFavorite(publication) ? sanitizedIcons.ICON_HEART_FILLED : sanitizedIcons.ICON_HEART_OUTLINE"></span>
+				</button>
+				<div
+					class="request-sent-badge"
+					*ngIf="hasSession() && !isPublicationOwner(publication) && hasPendingRequest(publication)"
+					aria-label="Solicitud enviada"
+				>
+					<span class="svg-icon" [innerHTML]="sanitizedIcons.ICON_LETTER"></span>
+				</div>
+				<img [src]="getCurrentImage(publication)" (error)="handleImageError($event)" [alt]="publication.title" />
+				<button
+					type="button"
+					class="image-nav prev"
+					*ngIf="(publication.images?.length ?? 0) > 1"
+					(click)="$event.stopPropagation(); previousImage(publication)"
+				>
+					‹
+				</button>
+				<button
+					type="button"
+					class="image-nav next"
+					*ngIf="(publication.images?.length ?? 0) > 1"
+					(click)="$event.stopPropagation(); nextImage(publication)"
+				>
+					›
+				</button>
+			</div>
+
+			<div class="card-content">
+				<h3>{{ publication.title }}</h3>
+				<p class="meta">{{ publication.createdAt | date:'mediumDate' }} · {{ adoptionStatusLabel[publication.adoptionStatus] }}</p>
+				<p class="author">Publicado por {{ getAuthorName(publication) }}</p>
+				<p class="description">{{ publication.description || 'Sin descripcion.' }}</p>
+				<div class="pet-badges" *ngIf="(publication.pets?.length ?? 0) > 0">
+					<span class="pet-badge" *ngFor="let pet of publication.pets">{{ pet.name }}</span>
+				</div>
+			</div>
+		</article>
+	</div>
+
+	<div class="empty-state" *ngIf="!isLoading && publications.length === 0">
+		No hay publicaciones activas por ahora.
+	</div>
+
+	<div class="modal-overlay" [class.closing]="isClosingLightbox" *ngIf="(isLightboxOpen || isClosingLightbox) && selectedPublication as publication">
+		<div class="modal-card">
+			<button type="button" class="modal-close-btn" (click)="closeLightbox()" aria-label="Cerrar">×</button>
+			<div class="modal-scroll-content">
+				<header class="modal-header">
+					<h2>{{ publication.title }}</h2>
+					<p>{{ publication.createdAt | date:'medium' }}</p>
+				</header>
+
+				<div class="modal-image-wrapper">
+					<img [src]="getModalImage()" (error)="handleImageError($event)" [alt]="publication.title" />
+					<button
+						type="button"
+						class="image-nav prev"
+						*ngIf="(publication.images?.length ?? 0) > 1"
+						(click)="previousModalImage()"
+					>
+						‹
+					</button>
+					<button
+						type="button"
+						class="image-nav next"
+						*ngIf="(publication.images?.length ?? 0) > 1"
+						(click)="nextModalImage()"
+					>
+						›
+					</button>
+				</div>
+
+				<div class="modal-image-list" *ngIf="(publication.images?.length ?? 0) > 0">
+					<button
+						type="button"
+						class="thumb-btn"
+						*ngFor="let image of publication.images; let i = index"
+						(click)="setModalImage(i)"
+						[class.active]="i === selectedModalImageIndex"
+					>
+						<img [src]="image.url" (error)="handleImageError($event)" [alt]="publication.title + ' ' + i" />
+					</button>
+				</div>
+
+				<p class="modal-description">{{ publication.description || 'Sin descripcion.' }}</p>
+				<p class="modal-author">Contacto: {{ publication.author?.contactEmail || publication.author?.email || 'Sin email' }}</p>
+
+				<section class="pet-details-section">
+					<h3>Detalles de las mascotas</h3>
+					<div class="pet-details-list" *ngIf="getPetDetailRows(publication).length > 0; else noPetDetails">
+						<article class="pet-detail-card" *ngFor="let pet of getPetDetailRows(publication)">
+							<h4>{{ pet.name }}</h4>
+							<img class="pet-fixed-image" [src]="getPetImage(pet)" (error)="handleImageError($event)" [alt]="pet.name" />
+							<p>Especie: {{ pet.species?.name || 'No definida' }}</p>
+							<p>Raza: {{ pet.breed?.name || 'No definida' }}</p>
+							<p>Sexo: {{ pet.sex || 'No definido' }}</p>
+							<p>Edad: {{ pet.age ?? 'No definida' }} años</p>
+							<p>Estatura: {{ pet.sizeCm ?? 'No definida' }} cm</p>
+							<p>{{ pet.description || 'Sin descripcion adicional.' }}</p>
+						</article>
+					</div>
+					<ng-template #noPetDetails>
+						<p class="owner-note">No hay detalles de mascotas en esta publicación.</p>
+					</ng-template>
+				</section>
+			</div>
+
+			<div class="modal-footer-fixed">
+				<div class="form-feedback" *ngIf="errorMessage">{{ errorMessage }}</div>
+				<div class="form-success" *ngIf="successMessage">{{ successMessage }}</div>
+
+				<section class="request-panel" *ngIf="!isPublicationOwner(publication)">
+					<ng-container *ngIf="hasSession(); else loginNeeded">
+						<ng-container *ngIf="!hasPendingRequest(publication); else revokePanel">
+							<label for="requestMessage">Mensaje para solicitud de adopcion (opcional)</label>
+							<textarea
+								id="requestMessage"
+								rows="3"
+								[(ngModel)]="requestMessage"
+								placeholder="Cuenta por que quieres adoptar esta mascota"
+							></textarea>
+							<button type="button" class="btn-save" (click)="submitAdoptionRequest()" [disabled]="isSubmittingRequest">
+								{{ isSubmittingRequest ? 'Enviando...' : 'Enviar solicitud' }}
+							</button>
+						</ng-container>
+						<ng-template #revokePanel>
+							<p class="request-sent-note">Ya tienes una solicitud de adopcion pendiente para esta publicacion.</p>
+							<button type="button" class="btn-revoke" (click)="revokeAdoptionRequest()" [disabled]="isRevokingRequest">
+								{{ isRevokingRequest ? 'Cancelando...' : 'Revocar solicitud' }}
+							</button>
+						</ng-template>
+					</ng-container>
+				</section>
+
+				<p class="owner-note" *ngIf="isPublicationOwner(publication)">
+					Esta es tu publicacion. Puedes gestionar solicitudes desde el apartado Publicaciones.
+				</p>
+
+				<ng-template #loginNeeded>
+					<p class="owner-note">Inicia sesion para enviar una solicitud de adopcion.</p>
+				</ng-template>
+
+				<div class="modal-actions">
+					<button type="button" class="btn-cancel" (click)="closeLightbox()">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>

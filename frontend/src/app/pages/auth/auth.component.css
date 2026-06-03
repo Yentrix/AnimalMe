@@ -1,0 +1,84 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+  background: var(--bg-primary);
+  height: 100%;
+  overflow-x: hidden;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 20px;
+  padding: 40px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+  box-shadow: none;
+}
+
+.auth-header h2 {
+  color: var(--accent-primary);
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.auth-footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px solid var(--border-color);
+  text-align: center;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Animación altura + opacidad al cambiar login ↔ registro */
+.auth-body-outer {
+  transition: max-height 0.35s ease-in-out;
+  overflow: hidden;
+  max-height: 780px;
+}
+
+.auth-body-outer.exit {
+  max-height: 560px;
+}
+
+.auth-body-inner {
+  min-height: 0;
+}
+
+.auth-body {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.auth-body.exit {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.auth-body.entering {
+  animation: authFadeIn 0.26s ease-in-out both;
+}
+
+@keyframes authFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

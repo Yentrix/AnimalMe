@@ -1,0 +1,222 @@
+package com.iax.animalme.application.service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.iax.animalme.application.dto.AdminBanUserRequestDto;
+import com.iax.animalme.application.dto.AdminNotificationRequestDto;
+import com.iax.animalme.domain.enums.NotificationType;
+import com.iax.animalme.domain.enums.UserRole;
+import com.iax.animalme.domain.enums.UserStatus;
+import com.iax.animalme.domain.model.Pet;
+import com.iax.animalme.domain.model.Publication;
+import com.iax.animalme.domain.model.User;
+import com.iax.animalme.domain.repository.ImageRepository;
+import com.iax.animalme.domain.repository.PetRepository;
+import com.iax.animalme.domain.repository.PublicationRepository;
+import com.iax.animalme.domain.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
+@Service
+public class AdminApplicationService {
+    private final UserRepository userRepository;
+    private final PublicationRepository publicationRepository;
+    private final PetRepository petRepository;
+    private final ImageRepository imageRepository;
+    private final PublicationApplicationService publicationApplicationService;
+    private final NotificationApplicationService notificationApplicationService;
+
+    public AdminApplicationService(
+            UserRepository userRepository,
+            PublicationRepository publicationRepository,
+            PetRepository petRepository,
+            ImageRepository imageRepository,
+            PublicationApplicationService publicationApplicationService,
+            NotificationApplicationService notificationApplicationService) {
+        this.userRepository = userRepository;
+        this.publicationRepository = publicationRepository;
+        this.petRepository = petRepository;
+        this.imageRepository = imageRepository;
+        this.publicationApplicationService = publicationApplicationService;
+        this.notificationApplicationService = notificationApplicationService;
+    }
+
+    public List<User> listUsers(Long adminId, String query) {
+        validateAdmin(adminId);
+
+        String needle = query == null ? "" : query.trim();
+        if (needle.isBlank()) {
+            return userRepository.findAll();
+        }
+
+        return userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                needle, needle, needle);
+    }
+
+    public User banUser(Long adminId, Long userId, AdminBanUserRequestDto request) {
+        validateAdmin(adminId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("El usuario no existe"));
+
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new IllegalArgumentException("No puedes banear a otro administrador");
+        }
+
+        String mode = request == null || request.getMode() == null
+                ? "TEMPORARY"
+                : request.getMode().trim().toUpperCase();
+        if ("PERMANENT".equals(mode)) {
+            user.setStatus(UserStatus.BANNED_PERMANENT);
+            user.setBannedUntil(null);
+        } else {
+            Integer days = request == null ? null : request.getDays();
+            Integer hours = request == null ? null : request.getHours();
+            Integer minutes = request == null ? null : request.getMinutes();
+
+            long totalMinutes = 0;
+            totalMinutes += (days != null && days > 0) ? days.longValue() * 24L * 60L : 0L;
+            totalMinutes += (hours != null && hours > 0) ? hours.longValue() * 60L : 0L;
+            totalMinutes += (minutes != null && minutes > 0) ? minutes.longValue() : 0L;
+
+            if (totalMinutes <= 0) {
+                totalMinutes = 24L * 60L;
+            }
+
+            user.setStatus(UserStatus.BANNED_TEMPORARY);
+            user.setBannedUntil(LocalDateTime.now().plusMinutes(totalMinutes));
+        }
+
+        return userRepository.save(user);
+    }
+
+    public User unbanUser(Long adminId, Long userId) {
+        validateAdmin(adminId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("El usuario no existe"));
+
+        user.setStatus(UserStatus.ACTIVE);
+        user.setBannedUntil(null);
+        return userRepository.save(user);
+    }
+
+    public List<Publication> listPublications(Long adminId, String query) {
+        validateAdmin(adminId);
+        String needle = query == null ? "" : query.trim().toLowerCase();
+        if (needle.isBlank()) {
+            return publicationRepository.findAll();
+        }
+
+        return publicationRepository.findAll().stream()
+                .filter(publication -> {
+                    String title = publication.getTitle() == null ? "" : publication.getTitle().toLowerCase();
+                    return title.contains(needle);
+                })
+                .toList();
+    }
+
+    @Transactional
+    public void deletePublication(Long adminId, Long publicationId) {
+        validateAdmin(adminId);
+        publicationApplicationService.deletePublicationAsAdmin(publicationId);
+    }
+
+    public List<Pet> listPets(Long adminId, String query) {
+        validateAdmin(adminId);
+        String needle = query == null ? "" : query.trim().toLowerCase();
+        if (needle.isBlank()) {
+            return petRepository.findAll();
+        }
+
+        return petRepository.findAll().stream()
+                .filter(pet -> {
+                    String name = pet.getName() == null ? "" : pet.getName().toLowerCase();
+                    return name.contains(needle);
+                })
+                .toList();
+    }
+
+            public Map<String, Object> getPetDeletionImpact(Long adminId, Long petId) {
+            validateAdmin(adminId);
+
+            petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("La mascota no existe"));
+
+            List<Publication> linkedPublications = publicationRepository.findByPetsId(petId);
+            List<String> publicationTitles = linkedPublications.stream()
+                .map(Publication::getTitle)
+                .toList();
+
+            return Map.of(
+                "linkedPublicationsCount", linkedPublications.size(),
+                "publicationTitles", publicationTitles);
+            }
+
+    @Transactional
+    public void deletePet(Long adminId, Long petId) {
+        validateAdmin(adminId);
+
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("La mascota no existe"));
+
+        List<Publication> publications = publicationRepository.findByPetsId(petId);
+            publications.forEach(publication -> publicationApplicationService.deletePublicationAsAdmin(publication.getId()));
+
+        imageRepository.deleteByPetId(petId);
+        petRepository.delete(pet);
+    }
+
+    public int sendNotification(Long adminId, AdminNotificationRequestDto request) {
+        validateAdmin(adminId);
+
+        String title = request.getTitle() == null ? "Aviso de AnimalMe" : request.getTitle().trim();
+        String message = request.getMessage() == null ? "" : request.getMessage().trim();
+
+        if (message.isBlank()) {
+            throw new IllegalArgumentException("El mensaje de notificacion es obligatorio");
+        }
+
+        List<Long> targetUserIds = new ArrayList<>();
+
+        if (Boolean.TRUE.equals(request.getSendToAll())) {
+            userRepository.findAll().stream()
+                    .filter(user -> user.getRole() != UserRole.ADMIN)
+                    .filter(user -> user.getStatus() == null || user.getStatus() == UserStatus.ACTIVE)
+                    .forEach(user -> targetUserIds.add(user.getId()));
+        } else {
+            if (request.getUserIds() == null || request.getUserIds().isEmpty()) {
+                throw new IllegalArgumentException("Debes seleccionar al menos un usuario");
+            }
+            targetUserIds.addAll(request.getUserIds());
+        }
+
+        targetUserIds.stream()
+                .distinct()
+                .forEach(userId -> notificationApplicationService.createNotification(
+                        userId,
+                        NotificationType.ADMIN_MESSAGE,
+                        title,
+                        message,
+                        null,
+                        null));
+
+        return (int) targetUserIds.stream().distinct().count();
+    }
+
+    private User validateAdmin(Long adminId) {
+        User user = userRepository.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("Administrador no encontrado"));
+
+        if (user.getRole() != UserRole.ADMIN) {
+            throw new IllegalArgumentException("No tienes permisos de administrador");
+        }
+
+        return user;
+    }
+}

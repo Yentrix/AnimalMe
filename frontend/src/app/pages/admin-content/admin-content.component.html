@@ -1,0 +1,88 @@
+<section class="admin-page">
+  <header class="page-header">
+    <h1>Gestion de contenido</h1>
+    <div class="tabs">
+      <button type="button" [class.active]="tab === 'publications'" (click)="tab = 'publications'">Publicaciones</button>
+      <button type="button" [class.active]="tab === 'pets'" (click)="tab = 'pets'">Mascotas</button>
+    </div>
+  </header>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="list" *ngIf="tab === 'publications'">
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="publicationQuery"
+        placeholder="Buscar publicaciones por nombre"
+      />
+      <button type="button" (click)="searchCurrentTab()">Buscar</button>
+    </div>
+
+    <article class="card" *ngFor="let publication of publications">
+      <div class="card-main">
+        <img
+          class="thumb"
+          [src]="getPublicationThumbnailUrl(publication)"
+          (error)="handleImageError($event)"
+          [alt]="publication.title"
+        />
+        <div>
+        <h3>{{ publication.title }}</h3>
+        <p>{{ publication.description || 'Sin descripcion' }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-danger" (click)="deletePublication(publication.id)">Borrar</button>
+    </article>
+  </div>
+
+  <div class="list" *ngIf="tab === 'pets'">
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="petQuery"
+        placeholder="Buscar mascotas por nombre"
+      />
+      <button type="button" (click)="searchCurrentTab()">Buscar</button>
+    </div>
+
+    <article class="card" *ngFor="let pet of pets">
+      <div class="card-main">
+        <img
+          class="thumb"
+          [src]="getPetThumbnailUrl(pet)"
+          (error)="handleImageError($event)"
+          [alt]="pet.name"
+        />
+        <div>
+        <h3>{{ pet.name }}</h3>
+        <p>{{ pet.species?.name || 'Sin especie' }} · {{ pet.breed?.name || 'Sin raza' }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-danger" (click)="deletePet(pet.id)">Borrar</button>
+    </article>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <button type="button" class="modal-close-btn" (click)="closeDeleteModal()" aria-label="Cerrar">×</button>
+      <h3>{{ deleteModalTitle }}</h3>
+      <p>{{ deleteModalMessage }}</p>
+
+      <p class="warn" *ngIf="deleteTargetType === 'pet' && !isDeleteLoading && deleteLinkedPublicationsCount > 0">
+        Esta mascota está en {{ deleteLinkedPublicationsCount }} publicacion(es). Si confirmas, también se borrarán esas publicaciones.
+      </p>
+
+      <ul class="impact-list" *ngIf="deleteTargetType === 'pet' && !isDeleteLoading && deleteLinkedPublicationTitles.length > 0">
+        <li *ngFor="let title of deleteLinkedPublicationTitles">{{ title }}</li>
+      </ul>
+
+      <p *ngIf="isDeleteLoading">Cargando información...</p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeDeleteModal()">Cancelar</button>
+        <button type="button" class="btn-danger" [disabled]="isDeleteLoading" (click)="confirmDelete()">Confirmar borrado</button>
+      </div>
+    </div>
+  </div>
+</section>

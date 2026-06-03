@@ -1,0 +1,153 @@
+package com.iax.animalme.application.service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.iax.animalme.domain.enums.AdoptionStatus;
+import com.iax.animalme.domain.model.Image;
+import com.iax.animalme.domain.model.Pet;
+import com.iax.animalme.domain.model.Publication;
+import com.iax.animalme.domain.model.User;
+import com.iax.animalme.domain.repository.ImageRepository;
+import com.iax.animalme.domain.repository.PetRepository;
+import com.iax.animalme.domain.repository.PublicationRepository;
+import com.iax.animalme.infrastructure.service.FileStorageService;
+
+@Service
+public class PetApplicationService {
+    private static final int PET_DESCRIPTION_MAX_LENGTH = 255;
+
+    private final PetRepository petRepository;
+    private final ImageRepository imageRepository;
+    private final PublicationRepository publicationRepository;
+    private final UserApplicationService userService;
+    private final FileStorageService fileStorageService;
+
+    public PetApplicationService(PetRepository petRepository,
+            UserApplicationService userService,
+            FileStorageService fileStorageService,
+            ImageRepository imageRepository,
+            PublicationRepository publicationRepository) {
+        this.petRepository = petRepository;
+        this.userService = userService;
+        this.fileStorageService = fileStorageService;
+        this.imageRepository = imageRepository;
+        this.publicationRepository = publicationRepository;
+    }
+
+    public Pet createPet(Pet pet, Long ownerId, MultipartFile imageFile) throws Exception {
+        validateDescriptionLength(pet.getDescription());
+
+        User owner = userService.findById(ownerId);
+        pet.setOwner(owner);
+        if (pet.getAdoptionStatus() == null) {
+            pet.setAdoptionStatus(AdoptionStatus.AVAILABLE);
+        }
+
+        Pet savedPet = petRepository.save(pet);
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            // Guardamos físicamente el archivo
+            String fileName = fileStorageService.storeFile(imageFile, "pets", savedPet.getId().toString());
+
+            // Creamos la entidad Image y la vinculamos
+            Image petImage = new Image();
+            petImage.setUrl(fileName); // El path o nombre devuelto por tu FileStorage
+            petImage.setPet(savedPet);
+            imageRepository.save(petImage);
+        }
+
+        return savedPet;
+    }
+
+    public List<Pet> getPetsByOwner(Long ownerId) {
+        return petRepository.findByOwnerId(ownerId);
+    }
+
+    @Transactional
+    public Pet updatePet(Long id, Pet petDetails, MultipartFile image) throws Exception {
+        validateDescriptionLength(petDetails.getDescription());
+
+        Pet oldPet = petRepository.findById(id)
+                .orElseThrow(() -> new Exception("Mascota no encontrada"));
+
+        // Usamos toBuilder para mantener el ID y el Owner originales
+        Pet petToSave = oldPet.toBuilder()
+                .name(petDetails.getName())
+            .age(petDetails.getAge())
+                .sex(petDetails.getSex())
+                .sizeCm(petDetails.getSizeCm())
+                .description(petDetails.getDescription())
+                .adoptionStatus(petDetails.getAdoptionStatus() != null ? petDetails.getAdoptionStatus() : oldPet.getAdoptionStatus())
+                .species(petDetails.getSpecies())
+                .breed(petDetails.getBreed())
+                .build();
+
+        // IMPORTANTE: Guardar en la base de datos
+        Pet savedPet = petRepository.save(petToSave);
+
+        if (image != null && !image.isEmpty()) {
+            List<Image> previousPetImages = imageRepository.findByPetId(savedPet.getId());
+            Set<String> previousImageUrls = previousPetImages.stream()
+                    .map(Image::getUrl)
+                    .filter(url -> url != null && !url.isBlank())
+                    .collect(Collectors.toSet());
+
+            // Replace previous image records so the edited pet keeps a single current photo.
+            imageRepository.deleteByPetId(savedPet.getId());
+
+            String fileName = fileStorageService.storeFile(image, "pets", savedPet.getId().toString());
+            Image petImage = new Image();
+            petImage.setUrl(fileName);
+            petImage.setPet(savedPet);
+            imageRepository.save(petImage);
+
+            syncPublicationImagesWithUpdatedPet(savedPet.getId(), previousImageUrls, fileName);
+        }
+
+        return savedPet;
+    }
+
+    private void syncPublicationImagesWithUpdatedPet(Long petId, Set<String> previousImageUrls, String newImageUrl) {
+        if (newImageUrl == null || newImageUrl.isBlank()) {
+            return;
+        }
+
+        List<Publication> linkedPublications = publicationRepository.findByPetsId(petId);
+        for (Publication publication : linkedPublications) {
+            List<Image> publicationImages = imageRepository.findByPublicationId(publication.getId());
+
+            boolean replacedAny = false;
+            for (Image image : publicationImages) {
+                if (image.getUrl() != null && previousImageUrls.contains(image.getUrl())) {
+                    image.setUrl(newImageUrl);
+                    imageRepository.save(image);
+                    replacedAny = true;
+                }
+            }
+
+            if (!replacedAny) {
+                Image propagatedImage = new Image();
+                propagatedImage.setUrl(newImageUrl);
+                propagatedImage.setPublication(publication);
+                imageRepository.save(propagatedImage);
+            }
+        }
+    }
+
+    private void validateDescriptionLength(String description) {
+        if (description == null) {
+            return;
+        }
+
+        String normalized = description.trim();
+        if (normalized.length() > PET_DESCRIPTION_MAX_LENGTH) {
+            throw new IllegalArgumentException("La descripcion de la mascota no puede superar 255 caracteres");
+        }
+    }
+}

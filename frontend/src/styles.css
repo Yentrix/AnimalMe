@@ -1,11 +1,285 @@
-/* You can add global styles to this file, and also import other style files */
-@import url('https://fonts.googleapis.com/css2?family=Actor&family=Funnel+Display:wght@300..800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Protest+Strike&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
 
-body, html {
+/* Light mode */
+:root {
+    /* Backgrounds */
+    --bg-primary: #fffcf0;
+    /* Amarillo muy claro/crema */
+    --bg-secondary: #ffffff;
+    --border-color: #d34b46;
+    /* Rojo oscuro para bordes */
+
+    /* Colores de marca */
+    --accent-primary: #e63946;
+    /* Rojo vibrante */
+    --accent-secondary: #ffb703;
+    /* Amarillo/Naranja */
+    --hover-bg: rgba(230, 57, 70, 0.1);
+
+    /* Inputs */
+    --input-bg: #ffffff;
+    --input-border: #d1d5db;
+    --input-border-focus: #f63b3b;
+    --input-placeholder: #af9c9c;
+    --input-autofill-bg: #fef6db;
+
+    /* Buttons */
+    --btn-primary-bg: #8a1e1e;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: #af1e1e;
+    --btn-secondary-bg: #cfcfca;
+    --btn-secondary-text: #513737;
+    --btn-secondary-hover: #b6abab;
+
+    /* Textos */
+    --text-primary: #2b1d1d;
+    --text-inverse: #ffebeb;
+    --sidebar-bg: #8a2e2b;
+    --sidebar-text: #ffffff;
+    --sidebar-text-muted: #f1a7a5;
+
+    --border-width: 2px;
+    --transition: 0.2s ease;
+}
+
+/* Dark mode */
+html[data-theme="dark"] {
+    --bg-primary: #1a0a0a;
+    --bg-secondary: #2d1414;
+    --border-color: #ff4d4d;
+
+    /* Inputs */
+    --input-bg: #321a1a;
+    --input-border: #513737;
+    --input-border-focus: #fac960;
+    --input-placeholder: #806b6b;
+    --input-autofill-bg: #5f2b2b;
+
+    /* Buttons */
+    --btn-primary-bg: #f63b3b;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: #eb3225;
+    --btn-secondary-bg: #3b241e;
+    --btn-secondary-text: #f0e4e2;
+    --btn-secondary-hover: #553733;
+
+    --text-primary: #ffebeb;
+    --text-inverse: #2b1d1d;
+    --sidebar-bg: #120505;
+    --sidebar-text: #ffebeb;
+    --sidebar-text-muted: #a37f7f;
+    --hover-bg: rgba(255, 77, 77, 0.15);
+}
+
+body,
+html {
+    font-family: "Quicksand", sans-serif;
     margin: 0;
     padding: 0;
-    background: #e3e6e9;
-    font-family: 'Ubuntu';
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    transition: background-color var(--transition), color var(--transition);
+    height: 100%;
+    overflow-x: hidden;
 }
+
+body:has(.modal-overlay),
+body:has(.modal-backdrop),
+body:has(.ban-modal-backdrop) {
+    overflow: hidden !important;
+}
+
+body:has(.modal-overlay) .page-container,
+body:has(.modal-backdrop) .page-container,
+body:has(.ban-modal-backdrop) .page-container {
+    overflow: hidden !important;
+}
+
+.modal-overlay,
+.modal-backdrop,
+.ban-modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(3px) !important;
+     z-index: 10000 !important;
+}
+
+.modal-card,
+.ban-modal-card,
+.confirm-delete-modal {
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 900px) or (orientation: portrait) {
+    .modal-overlay,
+    .modal-backdrop,
+    .ban-modal-backdrop {
+        padding: 12px !important;
+        align-items: flex-start !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-card,
+    .ban-modal-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - 24px) !important;
+        margin: 0 auto !important;
+        overflow-y: auto !important;
+        border-radius: 14px !important;
+        padding: 14px !important;
+    }
+
+    .confirm-delete-modal {
+        max-width: 100% !important;
+    }
+}
+
+body:has(.modal-overlay) .topbar,
+body:has(.modal-backdrop) .topbar,
+body:has(.ban-modal-backdrop) .topbar,
+body:has(.modal-overlay) .sidebar,
+body:has(.modal-backdrop) .sidebar,
+body:has(.ban-modal-backdrop) .sidebar,
+body:has(.modal-overlay) .floating-menu-btn,
+body:has(.modal-backdrop) .floating-menu-btn,
+body:has(.ban-modal-backdrop) .floating-menu-btn {
+    pointer-events: none !important;
+}
+
+body:has(.modal-overlay) .topbar-right,
+body:has(.modal-backdrop) .topbar-right,
+body:has(.ban-modal-backdrop) .topbar-right,
+body:has(.modal-overlay) .login-item,
+body:has(.modal-backdrop) .login-item,
+body:has(.ban-modal-backdrop) .login-item {
+    visibility: hidden !important;
+}
+
+.no-select {
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 15px 0;
+}
+
+.round {
+    border-radius: 100% !important;
+}
+
+.label-small {
+    font-size: 12px;
+    display: block;
+    margin-top: 4px;
+}
+
+.icon-large {
+    font-size: 26px;
+}
+
+.mobile-only {
+    display: none !important;
+}
+
+@media (max-width: 900px) or (orientation: portrait) {
+
+    .mobile-only {
+        /*display: inline;*/
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+    }
+}
+
+/* COMPONENTS */
+
+/* Cards */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition);
+}
+
+.card:hover {
+    background-color: var(--card-bg-hover);
+}
+
+/* Texto */
+.text-primary {
+    color: var(--text-primary) !important;
+}
+
+.text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-success {
+    color: var(--success) !important;
+}
+
+.text-warning {
+    color: var(--warning) !important;
+}
+
+.text-danger {
+    color: var(--danger) !important;
+}
+
+.text-info {
+    color: var(--info) !important;
+}
+
+/* Fondos */
+.bg-primary {
+    background-color: var(--bg-primary) !important;
+}
+
+.bg-secondary {
+    background-color: var(--bg-secondary) !important;
+}
+
+.bg-tertiary {
+    background-color: var(--bg-tertiary) !important;
+}
+
+/* ============================================
+   AUTOFILL (EMAIL, PASSWORD, ETC.)
+   ============================================ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--input-autofill-bg) inset !important;
+    box-shadow: 0 0 0 1000px var(--input-autofill-bg) inset !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    caret-color: var(--text-primary) !important;
+    transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s;
+}
+
+/* AUTH FORMS */

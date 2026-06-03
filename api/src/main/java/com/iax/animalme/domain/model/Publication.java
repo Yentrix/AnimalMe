@@ -1,0 +1,70 @@
+package com.iax.animalme.domain.model;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.iax.animalme.domain.enums.AdoptionStatus;
+import com.iax.animalme.domain.enums.PublicationStatus;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import lombok.Data;
+
+@Entity
+@Table(name = "publications")
+@Data
+public class Publication {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String title;
+    @Column(length = 800)
+    private String description;
+    private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    private PublicationStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private AdoptionStatus adoptionStatus;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    @JsonIgnoreProperties({"publications", "password", "pets"}) // Limpia el autor [cite: 33]
+    private User author;
+
+    @ManyToMany
+    @JoinTable(name = "publication_pets", 
+               joinColumns = @JoinColumn(name = "publication_id"), 
+               inverseJoinColumns = @JoinColumn(name = "pet_id"))
+    private List<Pet> pets;
+
+    @OneToMany(mappedBy = "publication")
+    @JsonIgnoreProperties("publication") // Los comentarios no deben recargar la publicación [cite: 35]
+    private List<Comment> comments;
+
+    @OneToMany(mappedBy = "publication")
+    @JsonIgnoreProperties("publication")
+    private List<Image> images;
+
+    @OneToMany(mappedBy = "publication")
+    @JsonIgnoreProperties({"publication"})
+    private List<AdoptionRequest> adoptionRequests;
+
+    @Transient
+    private Long pendingRequestsCount;
+}

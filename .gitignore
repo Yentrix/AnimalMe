@@ -1,0 +1,7 @@
+# Visual Studio Code
+.vscode/
+**/ .vscode/
+*.code-workspace
+.env
+DOCUMENTACION_PROYECTO_ANIMALME.txt
+GUION_PRESENTACION_TFG.txt
