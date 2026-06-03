@@ -38,6 +38,7 @@ public class Pet {
     private Integer age;
     private String sex;
     private Integer sizeCm;
+    @Column(length = 255)
     private String description;
 
     @Enumerated(EnumType.STRING)

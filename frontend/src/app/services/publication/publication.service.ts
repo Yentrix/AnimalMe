@@ -58,6 +58,12 @@ export interface AdoptionRequestSummary {
   applicant?: PublicationAuthor;
 }
 
+export interface MyPendingRequest {
+  id: number;
+  status: string;
+  publication?: { id: number; title?: string };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -117,5 +123,15 @@ export class PublicationService {
   deletePublication(publicationId: number, authorId: number): Observable<void> {
     const params = new HttpParams().set('authorId', authorId.toString());
     return this.http.delete<void>(`${this.apiUrl}/${publicationId}`, { params });
+  }
+
+  getMyPendingRequests(applicantId: number): Observable<MyPendingRequest[]> {
+    const params = new HttpParams().set('applicantId', applicantId.toString());
+    return this.http.get<MyPendingRequest[]>(`${this.apiUrl}/adoption-requests/my`, { params });
+  }
+
+  revokeAdoptionRequest(requestId: number, applicantId: number): Observable<void> {
+    const params = new HttpParams().set('applicantId', applicantId.toString());
+    return this.http.delete<void>(`${this.apiUrl}/adoption-requests/${requestId}/revoke`, { params });
   }
 }

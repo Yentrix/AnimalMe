@@ -87,6 +87,13 @@
 				>
 					<span class="svg-icon" [innerHTML]="isFavorite(publication) ? sanitizedIcons.ICON_HEART_FILLED : sanitizedIcons.ICON_HEART_OUTLINE"></span>
 				</button>
+				<div
+					class="request-sent-badge"
+					*ngIf="hasSession() && !isPublicationOwner(publication) && hasPendingRequest(publication)"
+					aria-label="Solicitud enviada"
+				>
+					<span class="svg-icon" [innerHTML]="sanitizedIcons.ICON_LETTER"></span>
+				</div>
 				<img [src]="getCurrentImage(publication)" (error)="handleImageError($event)" [alt]="publication.title" />
 				<button
 					type="button"
@@ -122,8 +129,9 @@
 		No hay publicaciones activas por ahora.
 	</div>
 
-	<div class="modal-overlay" *ngIf="isLightboxOpen && selectedPublication as publication">
+	<div class="modal-overlay" [class.closing]="isClosingLightbox" *ngIf="(isLightboxOpen || isClosingLightbox) && selectedPublication as publication">
 		<div class="modal-card">
+			<button type="button" class="modal-close-btn" (click)="closeLightbox()" aria-label="Cerrar">×</button>
 			<div class="modal-scroll-content">
 				<header class="modal-header">
 					<h2>{{ publication.title }}</h2>
@@ -191,16 +199,24 @@
 
 				<section class="request-panel" *ngIf="!isPublicationOwner(publication)">
 					<ng-container *ngIf="hasSession(); else loginNeeded">
-						<label for="requestMessage">Mensaje para solicitud de adopcion (opcional)</label>
-						<textarea
-							id="requestMessage"
-							rows="3"
-							[(ngModel)]="requestMessage"
-							placeholder="Cuenta por que quieres adoptar esta mascota"
-						></textarea>
-						<button type="button" class="btn-save" (click)="submitAdoptionRequest()" [disabled]="isSubmittingRequest">
-							{{ isSubmittingRequest ? 'Enviando...' : 'Enviar solicitud' }}
-						</button>
+						<ng-container *ngIf="!hasPendingRequest(publication); else revokePanel">
+							<label for="requestMessage">Mensaje para solicitud de adopcion (opcional)</label>
+							<textarea
+								id="requestMessage"
+								rows="3"
+								[(ngModel)]="requestMessage"
+								placeholder="Cuenta por que quieres adoptar esta mascota"
+							></textarea>
+							<button type="button" class="btn-save" (click)="submitAdoptionRequest()" [disabled]="isSubmittingRequest">
+								{{ isSubmittingRequest ? 'Enviando...' : 'Enviar solicitud' }}
+							</button>
+						</ng-container>
+						<ng-template #revokePanel>
+							<p class="request-sent-note">Ya tienes una solicitud de adopcion pendiente para esta publicacion.</p>
+							<button type="button" class="btn-revoke" (click)="revokeAdoptionRequest()" [disabled]="isRevokingRequest">
+								{{ isRevokingRequest ? 'Cancelando...' : 'Revocar solicitud' }}
+							</button>
+						</ng-template>
 					</ng-container>
 				</section>
 

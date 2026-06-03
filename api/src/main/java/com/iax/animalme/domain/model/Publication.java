@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.iax.animalme.domain.enums.AdoptionStatus;
 import com.iax.animalme.domain.enums.PublicationStatus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -31,6 +32,7 @@ public class Publication {
     private Long id;
 
     private String title;
+    @Column(length = 800)
     private String description;
     private LocalDateTime createdAt;
 

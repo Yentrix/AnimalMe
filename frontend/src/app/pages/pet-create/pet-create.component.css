@@ -154,14 +154,19 @@
 
 .modal-overlay {
     position: fixed;
-    inset: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
     background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(3px);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    z-index: 2100;
+    z-index: 5000;
 }
 
 .modal-card {
@@ -211,6 +216,13 @@
     color: #d12f2f;
     font-size: 12px;
     font-weight: 600;
+}
+
+.char-counter {
+    margin-top: -8px;
+    text-align: right;
+    font-size: 12px;
+    opacity: 0.75;
 }
 
 .neo-form input,

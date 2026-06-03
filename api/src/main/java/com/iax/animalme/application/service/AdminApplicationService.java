@@ -3,6 +3,7 @@ package com.iax.animalme.application.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -141,6 +142,22 @@ public class AdminApplicationService {
                 .toList();
     }
 
+            public Map<String, Object> getPetDeletionImpact(Long adminId, Long petId) {
+            validateAdmin(adminId);
+
+            petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("La mascota no existe"));
+
+            List<Publication> linkedPublications = publicationRepository.findByPetsId(petId);
+            List<String> publicationTitles = linkedPublications.stream()
+                .map(Publication::getTitle)
+                .toList();
+
+            return Map.of(
+                "linkedPublicationsCount", linkedPublications.size(),
+                "publicationTitles", publicationTitles);
+            }
+
     @Transactional
     public void deletePet(Long adminId, Long petId) {
         validateAdmin(adminId);
@@ -149,12 +166,7 @@ public class AdminApplicationService {
                 .orElseThrow(() -> new IllegalArgumentException("La mascota no existe"));
 
         List<Publication> publications = publicationRepository.findByPetsId(petId);
-        publications.forEach(pub -> {
-            List<Pet> pets = new ArrayList<>(pub.getPets());
-            pets.removeIf(existing -> existing.getId().equals(petId));
-            pub.setPets(pets);
-            publicationRepository.save(pub);
-        });
+            publications.forEach(publication -> publicationApplicationService.deletePublicationAsAdmin(publication.getId()));
 
         imageRepository.deleteByPetId(petId);
         petRepository.delete(pet);

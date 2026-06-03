@@ -13,7 +13,7 @@
         <div class="pet-card" *ngFor="let pet of pets" [class.in-publication]="petsInPublication.has(pet.id)">
             <span class="publication-badge" *ngIf="petsInPublication.has(pet.id)">En publicación</span>
             <div class="card-image-container">
-                <img [src]="pet.images?.length > 0 ? pet.images[0].url : 'assets/placeholder.png'"
+                <img [src]="getPetMainImageUrl(pet) || 'assets/placeholder.png'"
                     (error)="handleImageError($event)" class="card-img-top">
             </div>
 
@@ -122,7 +122,14 @@
                     </select>
                 </div>
 
-                <textarea formControlName="description" placeholder="Cuéntanos algo sobre ella..."></textarea>
+                <textarea
+                    formControlName="description"
+                    placeholder="Cuéntanos algo sobre ella..."
+                    [attr.maxlength]="petDescriptionMaxLength"></textarea>
+                <div class="char-counter">{{ petDescriptionLength }}/{{ petDescriptionMaxLength }}</div>
+                <small class="field-error" *ngIf="descriptionControl?.touched && descriptionControl?.errors?.['maxlength']">
+                    La descripcion no puede superar los {{ petDescriptionMaxLength }} caracteres.
+                </small>
 
                 <div class="file-upload-field">
                     <label class="file-label">
@@ -130,6 +137,8 @@
                         {{ selectedFile ? selectedFile.name : 'Subir foto' }}
                         <input type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
                     </label>
+                    <small>Se optimiza automaticamente para evitar errores de subida.</small>
+                    <small class="field-error" *ngIf="imageUploadError">{{ imageUploadError }}</small>
                 </div>
 
                 <div class="modal-actions">

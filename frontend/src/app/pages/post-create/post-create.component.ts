@@ -17,6 +17,7 @@ interface PetImage {
 interface PetSummary {
   id: number;
   name: string;
+  description?: string;
   species?: { name?: string };
   breed?: { name?: string };
   images?: PetImage[];
@@ -41,6 +42,7 @@ interface AuthUser {
   styleUrl: './post-create.component.css'
 })
 export class PostCreateComponent implements OnInit {
+  readonly publicationDescriptionMaxLength = 800;
   postForm!: FormGroup;
   pets: PetSummary[] = [];
   availablePets: PetSummary[] = [];
@@ -74,7 +76,7 @@ export class PostCreateComponent implements OnInit {
   ngOnInit(): void {
     this.postForm = this.fb.group({
       title: [''],
-      description: [''],
+      description: ['', [Validators.maxLength(this.publicationDescriptionMaxLength)]],
       adoptionStatus: [AdoptionStatus.AVAILABLE, [Validators.required]]
     });
 
@@ -120,6 +122,19 @@ export class PostCreateComponent implements OnInit {
       return this.isEditMode ? 'Guardando...' : 'Creando...';
     }
     return this.isEditMode ? 'Guardar cambios' : 'Crear publicacion';
+  }
+
+  get descriptionControl() {
+    return this.postForm.get('description');
+  }
+
+  get publicationDescriptionLength(): number {
+    const value = this.descriptionControl?.value;
+    return typeof value === 'string' ? value.length : 0;
+  }
+
+  get canCopyPetDescriptions(): boolean {
+    return this.selectedPetIds.length > 0;
   }
 
   loadPetsAndPublications(): void {
@@ -194,6 +209,23 @@ export class PostCreateComponent implements OnInit {
 
     this.syncPetImagePreviews();
     this.rebuildAvailablePets();
+  }
+
+  copyPetDescriptionsIntoPublication(): void {
+    if (!this.canCopyPetDescriptions) {
+      return;
+    }
+
+    const selectedDescriptions = this.pets
+      .filter(pet => this.selectedPetIds.includes(pet.id))
+      .map(pet => (pet.description ?? '').trim())
+      .filter(text => text.length > 0);
+
+    const merged = selectedDescriptions.join('\n');
+    const limited = merged.slice(0, this.publicationDescriptionMaxLength);
+
+    this.postForm.patchValue({ description: limited });
+    this.descriptionControl?.markAsTouched();
   }
 
   onImagesSelected(event: Event): void {

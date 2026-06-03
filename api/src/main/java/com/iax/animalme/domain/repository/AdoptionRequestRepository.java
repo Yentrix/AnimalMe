@@ -14,6 +14,7 @@ public interface AdoptionRequestRepository extends JpaRepository<AdoptionRequest
     List<AdoptionRequest> findByPublicationIdOrderByCreatedAtDesc(Long publicationId);
     List<AdoptionRequest> findByPublicationIdAndStatus(Long publicationId, RequestStatus status);
     List<AdoptionRequest> findByApplicantId(Long applicantId);
+    List<AdoptionRequest> findByApplicantIdAndStatus(Long applicantId, RequestStatus status);
     Long countByPublicationIdAndStatus(Long publicationId, RequestStatus status);
     boolean existsByPublicationIdAndApplicantIdAndStatus(Long publicationId, Long applicantId, RequestStatus status);
     void deleteByPublicationId(Long publicationId);

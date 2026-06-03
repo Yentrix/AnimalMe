@@ -138,6 +138,23 @@
   font-size: 14px;
   line-height: 1.35;
   flex: 1;
+  position: relative;
+  display: -webkit-box;
+  line-clamp: 4;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.publication-description::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.6em;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), var(--bg-secondary));
+  pointer-events: none;
 }
 
 .publication-actions {
@@ -187,14 +204,19 @@
 
 .modal-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  z-index: 2100;
+  z-index: 5000;
 }
 
 .modal-card {

@@ -35,6 +35,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class PublicationApplicationService {
+    private static final int PUBLICATION_DESCRIPTION_MAX_LENGTH = 800;
     private final PublicationRepository publicationRepository;
     private final ImageRepository imageRepository;
     private final FileStorageService fileStorageService;
@@ -60,6 +61,8 @@ public class PublicationApplicationService {
 
     @Transactional
     public Publication createPublication(PublicationCreateRequestDto request, Long authorId, MultipartFile[] images) throws Exception {
+        validateDescriptionLength(request.getDescription());
+
         if (request.getPetIds() == null || request.getPetIds().isEmpty()) {
             throw new IllegalArgumentException("La publicacion debe incluir al menos una mascota");
         }
@@ -136,6 +139,8 @@ public class PublicationApplicationService {
 
     @Transactional
     public Publication updatePublication(Long publicationId, Long authorId, PublicationUpdateRequestDto request, MultipartFile[] images) throws Exception {
+        validateDescriptionLength(request.getDescription());
+
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new IllegalArgumentException("La publicacion no existe"));
         ensurePublicationAuthor(publication, authorId);
@@ -404,5 +409,39 @@ public class PublicationApplicationService {
             Long pendingCount = adoptionRequestRepository.countByPublicationIdAndStatus(publication.getId(), RequestStatus.PENDING);
             publication.setPendingRequestsCount(pendingCount);
         }
+    }
+
+    private void validateDescriptionLength(String description) {
+        if (description == null) {
+            return;
+        }
+
+        String normalized = description.trim();
+        if (normalized.length() > PUBLICATION_DESCRIPTION_MAX_LENGTH) {
+            throw new IllegalArgumentException("La descripcion de la publicacion no puede superar 800 caracteres");
+        }
+    }
+
+    public List<AdoptionRequest> getMyPendingRequests(Long applicantId) {
+        if (!userRepository.existsById(applicantId)) {
+            throw new IllegalArgumentException("El usuario no existe");
+        }
+        return adoptionRequestRepository.findByApplicantIdAndStatus(applicantId, RequestStatus.PENDING);
+    }
+
+    @Transactional
+    public void revokeAdoptionRequest(Long requestId, Long applicantId) {
+        AdoptionRequest request = adoptionRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("La solicitud no existe"));
+
+        if (request.getApplicant() == null || !request.getApplicant().getId().equals(applicantId)) {
+            throw new IllegalArgumentException("No tienes permiso para cancelar esta solicitud");
+        }
+
+        if (request.getStatus() != RequestStatus.PENDING) {
+            throw new IllegalArgumentException("Solo puedes cancelar solicitudes pendientes");
+        }
+
+        adoptionRequestRepository.delete(request);
     }
 }

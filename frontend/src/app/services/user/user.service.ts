@@ -10,6 +10,8 @@ export interface UserProfile {
   email?: string;
   contactEmail?: string;
   contactPhone?: string;
+  status?: 'ACTIVE' | 'BANNED_TEMPORARY' | 'BANNED_PERMANENT';
+  bannedUntil?: string;
 }
 
 @Injectable({

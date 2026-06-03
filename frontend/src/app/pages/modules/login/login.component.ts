@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   @Output() switchToRegister = new EventEmitter<void>();
 
   credentials = { email: '', password: '' };
@@ -20,6 +20,17 @@ export class LoginComponent {
   banModalMessage = '';
 
   constructor(private authService: AuthService, private router: Router) { }
+
+  ngOnInit(): void {
+    const banMessage = sessionStorage.getItem('banModalMessage');
+    if (!banMessage) {
+      return;
+    }
+
+    this.banModalMessage = banMessage;
+    this.showBanModal = true;
+    sessionStorage.removeItem('banModalMessage');
+  }
 
   onLogin() {
     this.errorMessage = '';

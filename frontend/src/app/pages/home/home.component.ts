@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { PublicationPet, PublicationService, PublicationSummary } from '../../services/publication/publication.service';
+import { MyPendingRequest, PublicationPet, PublicationService, PublicationSummary } from '../../services/publication/publication.service';
 import { svgIcons } from '../../icons/svg-icons';
 
 interface AuthUser {
@@ -36,10 +36,13 @@ export class HomeComponent implements OnInit {
   sanitizedIcons: Record<keyof typeof svgIcons, SafeHtml>;
 
   isLightboxOpen = false;
+  isClosingLightbox = false;
   selectedPublication: PublicationSummary | null = null;
   selectedModalImageIndex = 0;
   requestMessage = '';
   isSubmittingRequest = false;
+  isRevokingRequest = false;
+  pendingRequestByPublication = new Map<number, number>();
 
   readonly adoptionStatusLabel: Record<'AVAILABLE' | 'URGENT' | 'ADOPTED', string> = {
     AVAILABLE: 'Disponible',
@@ -60,6 +63,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.loadFavoritePublications();
     this.loadPublications();
+    this.loadMyPendingRequests();
   }
 
   loadPublications(): void {
@@ -214,15 +218,25 @@ export class HomeComponent implements OnInit {
     this.requestMessage = '';
     this.successMessage = '';
     this.errorMessage = '';
+    this.isClosingLightbox = false;
     this.isLightboxOpen = true;
   }
 
   closeLightbox(): void {
-    this.isLightboxOpen = false;
-    this.selectedPublication = null;
-    this.selectedModalImageIndex = 0;
-    this.requestMessage = '';
-    this.isSubmittingRequest = false;
+    if (!this.isLightboxOpen || this.isClosingLightbox) {
+      return;
+    }
+
+    this.isClosingLightbox = true;
+
+    setTimeout(() => {
+      this.isLightboxOpen = false;
+      this.isClosingLightbox = false;
+      this.selectedPublication = null;
+      this.selectedModalImageIndex = 0;
+      this.requestMessage = '';
+      this.isSubmittingRequest = false;
+    }, 160);
   }
 
   previousModalImage(): void {
@@ -289,16 +303,75 @@ export class HomeComponent implements OnInit {
     this.publicationService
       .createAdoptionRequest(this.selectedPublication.id, userId, this.requestMessage.trim())
       .subscribe({
-        next: () => {
+        next: (created) => {
           this.successMessage = 'Solicitud enviada correctamente.';
           this.requestMessage = '';
           this.isSubmittingRequest = false;
+          if (this.selectedPublication && created?.id) {
+            this.pendingRequestByPublication.set(this.selectedPublication.id, created.id);
+          }
         },
         error: () => {
           this.errorMessage = 'No se pudo enviar la solicitud. Revisa si ya tienes una pendiente.';
           this.isSubmittingRequest = false;
         }
       });
+  }
+
+  revokeAdoptionRequest(): void {
+    if (!this.selectedPublication) {
+      return;
+    }
+
+    const requestId = this.pendingRequestByPublication.get(this.selectedPublication.id);
+    if (!requestId) {
+      return;
+    }
+
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      return;
+    }
+
+    this.isRevokingRequest = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.publicationService.revokeAdoptionRequest(requestId, userId).subscribe({
+      next: () => {
+        this.pendingRequestByPublication.delete(this.selectedPublication!.id);
+        this.successMessage = 'Solicitud cancelada correctamente.';
+        this.isRevokingRequest = false;
+      },
+      error: () => {
+        this.errorMessage = 'No se pudo cancelar la solicitud.';
+        this.isRevokingRequest = false;
+      }
+    });
+  }
+
+  hasPendingRequest(publication: PublicationSummary): boolean {
+    return this.pendingRequestByPublication.has(publication.id);
+  }
+
+  loadMyPendingRequests(): void {
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      return;
+    }
+
+    this.publicationService.getMyPendingRequests(userId).subscribe({
+      next: (requests: MyPendingRequest[]) => {
+        this.pendingRequestByPublication.clear();
+        requests.forEach(r => {
+          const pubId = r.publication?.id;
+          if (pubId) {
+            this.pendingRequestByPublication.set(pubId, r.id);
+          }
+        });
+      },
+      error: () => {}
+    });
   }
 
   isPublicationOwner(publication: PublicationSummary): boolean {

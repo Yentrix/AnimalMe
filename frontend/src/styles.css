@@ -84,6 +84,88 @@ html {
     overflow-x: hidden;
 }
 
+body:has(.modal-overlay),
+body:has(.modal-backdrop),
+body:has(.ban-modal-backdrop) {
+    overflow: hidden !important;
+}
+
+body:has(.modal-overlay) .page-container,
+body:has(.modal-backdrop) .page-container,
+body:has(.ban-modal-backdrop) .page-container {
+    overflow: hidden !important;
+}
+
+.modal-overlay,
+.modal-backdrop,
+.ban-modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(3px) !important;
+     z-index: 10000 !important;
+}
+
+.modal-card,
+.ban-modal-card,
+.confirm-delete-modal {
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 900px) or (orientation: portrait) {
+    .modal-overlay,
+    .modal-backdrop,
+    .ban-modal-backdrop {
+        padding: 12px !important;
+        align-items: flex-start !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-card,
+    .ban-modal-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - 24px) !important;
+        margin: 0 auto !important;
+        overflow-y: auto !important;
+        border-radius: 14px !important;
+        padding: 14px !important;
+    }
+
+    .confirm-delete-modal {
+        max-width: 100% !important;
+    }
+}
+
+body:has(.modal-overlay) .topbar,
+body:has(.modal-backdrop) .topbar,
+body:has(.ban-modal-backdrop) .topbar,
+body:has(.modal-overlay) .sidebar,
+body:has(.modal-backdrop) .sidebar,
+body:has(.ban-modal-backdrop) .sidebar,
+body:has(.modal-overlay) .floating-menu-btn,
+body:has(.modal-backdrop) .floating-menu-btn,
+body:has(.ban-modal-backdrop) .floating-menu-btn {
+    pointer-events: none !important;
+}
+
+body:has(.modal-overlay) .topbar-right,
+body:has(.modal-backdrop) .topbar-right,
+body:has(.ban-modal-backdrop) .topbar-right,
+body:has(.modal-overlay) .login-item,
+body:has(.modal-backdrop) .login-item,
+body:has(.ban-modal-backdrop) .login-item {
+    visibility: hidden !important;
+}
+
 .no-select {
     -webkit-user-select: none;
     -ms-user-select: none;

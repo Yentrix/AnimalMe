@@ -6,9 +6,13 @@
       <p>{{ isLogin ? 'Tus amigos peludos te esperan.' : 'Únete a nuestra comunidad de adopción.' }}</p>
     </div>
 
-    <div class="auth-body" [class.exit]="isExiting">
-      <app-login *ngIf="isLogin" (switchToRegister)="toggleAuth()"></app-login>
-      <app-register *ngIf="!isLogin" (switchToLogin)="toggleAuth()"></app-register>
+    <div class="auth-body-outer" [class.exit]="animationState === 'exiting'">
+      <div class="auth-body-inner">
+        <div class="auth-body" [class.exit]="animationState === 'exiting'" [class.entering]="animationState === 'entering'">
+          <app-login *ngIf="isLogin" (switchToRegister)="toggleAuth()"></app-login>
+          <app-register *ngIf="!isLogin" (switchToLogin)="toggleAuth()"></app-register>
+        </div>
+      </div>
     </div>
 
     <div class="auth-footer">
