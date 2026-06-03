@@ -15,8 +15,11 @@ import { svgIcons } from '../../icons/svg-icons';
 })
 export class PetManagementComponent implements OnInit {
   readonly petDescriptionMaxLength = 255;
+  readonly maxImageUploadBytes = 900 * 1024;
+  readonly maxImageDimension = 1600;
   viewMode: 'list' | 'kanban' = 'kanban';
   imagePreview: string | null = null;
+  imageUploadError = '';
   pets: any[] = [];
   petForm!: FormGroup;
   selectedFile: File | null = null;
@@ -154,21 +157,45 @@ export class PetManagementComponent implements OnInit {
     this.filteredBreeds = []; // Cerramos la lista
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
+  async onFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
 
-      // Crear la vista previa
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-      };
-      reader.readAsDataURL(file);
+    this.imageUploadError = '';
+
+    if (!file.type.startsWith('image/')) {
+      this.selectedFile = null;
+      this.imageUploadError = 'El archivo seleccionado no es una imagen valida.';
+      input.value = '';
+      return;
+    }
+
+    try {
+      const optimizedFile = await this.optimizeImageForUpload(file);
+
+      if (optimizedFile.size > this.maxImageUploadBytes) {
+        this.selectedFile = null;
+        this.imageUploadError = 'La imagen es demasiado grande. Prueba con una mas ligera.';
+        input.value = '';
+        return;
+      }
+
+      this.selectedFile = optimizedFile;
+      this.imagePreview = await this.readAsDataUrl(optimizedFile);
+    } catch (error) {
+      this.selectedFile = null;
+      this.imageUploadError = 'No se pudo procesar la imagen. Prueba con otro archivo.';
+      input.value = '';
+      console.error('Error procesando imagen:', error);
     }
   }
 
   savePet() {
+    this.imageUploadError = '';
+
     const ageValue = this.parseNumberInput(this.ageInput);
     const sizeValue = this.parseNumberInput(this.sizeCmInput);
 
@@ -210,13 +237,23 @@ export class PetManagementComponent implements OnInit {
       // Actualizar
       this.petService.updatePet(this.selectedPetId, formData).subscribe({
         next: () => this.handleSuccess(),
-        error: (err) => console.error('Error al actualizar:', err)
+        error: (err) => {
+          if (err?.status === 413) {
+            this.imageUploadError = 'La imagen supera el limite permitido por el servidor.';
+          }
+          console.error('Error al actualizar:', err);
+        }
       });
     } else {
       // Crear
       this.petService.createPet(formData, ownerId).subscribe({
         next: () => this.handleSuccess(),
-        error: (err) => console.error('Error al crear:', err)
+        error: (err) => {
+          if (err?.status === 413) {
+            this.imageUploadError = 'La imagen supera el limite permitido por el servidor.';
+          }
+          console.error('Error al crear:', err);
+        }
       });
     }
   }
@@ -235,6 +272,7 @@ export class PetManagementComponent implements OnInit {
     this.isEditing = false;
     this.selectedPetId = null;
     this.imagePreview = null;
+    this.imageUploadError = '';
     this.selectedFile = null;
     this.ageInput = '';
     this.sizeCmInput = '';
@@ -347,6 +385,99 @@ export class PetManagementComponent implements OnInit {
   private formatWithUnit(value: unknown, unit: string): string {
     const numberValue = this.parseNumberInput(value);
     return numberValue == null ? '' : `${numberValue} ${unit}`;
+  }
+
+  private async optimizeImageForUpload(file: File): Promise<File> {
+    if (file.size <= this.maxImageUploadBytes) {
+      return file;
+    }
+
+    const dataUrl = await this.readAsDataUrl(file);
+    const image = await this.loadImage(dataUrl);
+    const canvas = document.createElement('canvas');
+
+    const scaledSize = this.getScaledSize(image.width, image.height, this.maxImageDimension);
+    canvas.width = scaledSize.width;
+    canvas.height = scaledSize.height;
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('No se pudo crear el contexto de imagen');
+    }
+
+    context.drawImage(image, 0, 0, scaledSize.width, scaledSize.height);
+
+    const qualities = [0.86, 0.78, 0.7, 0.62, 0.55];
+    let bestCandidate: Blob | null = null;
+
+    for (const quality of qualities) {
+      const blob = await this.canvasToJpegBlob(canvas, quality);
+      if (!blob) {
+        continue;
+      }
+
+      if (!bestCandidate || blob.size < bestCandidate.size) {
+        bestCandidate = blob;
+      }
+
+      if (blob.size <= this.maxImageUploadBytes) {
+        bestCandidate = blob;
+        break;
+      }
+    }
+
+    if (!bestCandidate) {
+      throw new Error('No se pudo generar una imagen optimizada');
+    }
+
+    const fileName = this.toJpgFileName(file.name);
+    return new File([bestCandidate], fileName, {
+      type: 'image/jpeg',
+      lastModified: Date.now()
+    });
+  }
+
+  private toJpgFileName(originalName: string): string {
+    const dotIndex = originalName.lastIndexOf('.');
+    const baseName = dotIndex > 0 ? originalName.slice(0, dotIndex) : originalName;
+    return `${baseName}.jpg`;
+  }
+
+  private getScaledSize(width: number, height: number, maxDimension: number): { width: number; height: number } {
+    const largestDimension = Math.max(width, height);
+    if (largestDimension <= maxDimension) {
+      return { width, height };
+    }
+
+    const ratio = maxDimension / largestDimension;
+    return {
+      width: Math.max(1, Math.round(width * ratio)),
+      height: Math.max(1, Math.round(height * ratio))
+    };
+  }
+
+  private canvasToJpegBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob | null> {
+    return new Promise(resolve => {
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+    });
+  }
+
+  private readAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private loadImage(dataUrl: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('No se pudo cargar la imagen'));
+      image.src = dataUrl;
+    });
   }
 
   get nameControl() {

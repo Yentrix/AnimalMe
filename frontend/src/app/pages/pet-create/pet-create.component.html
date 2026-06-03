@@ -137,6 +137,8 @@
                         {{ selectedFile ? selectedFile.name : 'Subir foto' }}
                         <input type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
                     </label>
+                    <small>Se optimiza automaticamente para evitar errores de subida.</small>
+                    <small class="field-error" *ngIf="imageUploadError">{{ imageUploadError }}</small>
                 </div>
 
                 <div class="modal-actions">
