@@ -346,23 +346,17 @@
 }
 
 .modal-overlay {
-	position: fixed;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	width: 100vw;
-	height: 100dvh;
-	background: rgba(0, 0, 0, 0.45);
-	backdrop-filter: blur(3px);
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	padding: 20px;
-	z-index: 5000;
+	background: rgba(0, 0, 0, 0);
+	animation: modalFade 260ms ease-in forwards;
+}
+
+.modal-overlay.closing {
+	animation: modalFade 140ms ease-out reverse forwards;
 }
 
 .modal-card {
+	position: relative;
 	background: var(--bg-secondary);
 	border: 2px solid var(--border-color);
 	border-radius: 20px;
@@ -374,6 +368,51 @@
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+	animation: modalRise 280ms ease-in forwards;
+}
+
+.modal-overlay.closing .modal-card {
+	animation: modalRise 140ms ease-out reverse forwards;
+}
+
+.modal-close-btn {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 36px;
+	height: 36px;
+	border-radius: 999px;
+	border: 1px solid var(--border-color);
+	background: transparent;
+	color: var(--text-primary);
+	font-size: 22px;
+	line-height: 1;
+	font-weight: 700;
+	cursor: pointer;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.modal-close-btn:hover {
+	background: var(--hover-bg);
+}
+
+@keyframes modalFade {
+	from { background: rgba(0, 0, 0, 0); }
+	to { background: rgba(0, 0, 0, 0.45); }
+}
+
+@keyframes modalRise {
+	from {
+		opacity: 0;
+		transform: translateY(42px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .modal-scroll-content {

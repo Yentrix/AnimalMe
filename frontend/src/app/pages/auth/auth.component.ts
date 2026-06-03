@@ -13,15 +13,24 @@ import { CommonModule } from '@angular/common';
 export class AuthComponent {
   isLogin = true;
   isExiting = false;
+  animationState: 'idle' | 'exiting' | 'entering' = 'idle';
 
   toggleAuth() {
     if (this.isExiting) {
       return;
     }
+
+    this.animationState = 'exiting';
     this.isExiting = true;
+
     setTimeout(() => {
       this.isLogin = !this.isLogin;
-      this.isExiting = false;
+      this.animationState = 'entering';
+
+      setTimeout(() => {
+        this.isExiting = false;
+        this.animationState = 'idle';
+      }, 260);
     }, 300);
   }
 }

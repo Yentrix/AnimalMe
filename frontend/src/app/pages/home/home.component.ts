@@ -36,6 +36,7 @@ export class HomeComponent implements OnInit {
   sanitizedIcons: Record<keyof typeof svgIcons, SafeHtml>;
 
   isLightboxOpen = false;
+  isClosingLightbox = false;
   selectedPublication: PublicationSummary | null = null;
   selectedModalImageIndex = 0;
   requestMessage = '';
@@ -217,15 +218,25 @@ export class HomeComponent implements OnInit {
     this.requestMessage = '';
     this.successMessage = '';
     this.errorMessage = '';
+    this.isClosingLightbox = false;
     this.isLightboxOpen = true;
   }
 
   closeLightbox(): void {
-    this.isLightboxOpen = false;
-    this.selectedPublication = null;
-    this.selectedModalImageIndex = 0;
-    this.requestMessage = '';
-    this.isSubmittingRequest = false;
+    if (!this.isLightboxOpen || this.isClosingLightbox) {
+      return;
+    }
+
+    this.isClosingLightbox = true;
+
+    setTimeout(() => {
+      this.isLightboxOpen = false;
+      this.isClosingLightbox = false;
+      this.selectedPublication = null;
+      this.selectedModalImageIndex = 0;
+      this.requestMessage = '';
+      this.isSubmittingRequest = false;
+    }, 160);
   }
 
   previousModalImage(): void {

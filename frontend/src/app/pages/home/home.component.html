@@ -129,8 +129,9 @@
 		No hay publicaciones activas por ahora.
 	</div>
 
-	<div class="modal-overlay" *ngIf="isLightboxOpen && selectedPublication as publication">
+	<div class="modal-overlay" [class.closing]="isClosingLightbox" *ngIf="(isLightboxOpen || isClosingLightbox) && selectedPublication as publication">
 		<div class="modal-card">
+			<button type="button" class="modal-close-btn" (click)="closeLightbox()" aria-label="Cerrar">×</button>
 			<div class="modal-scroll-content">
 				<header class="modal-header">
 					<h2>{{ publication.title }}</h2>

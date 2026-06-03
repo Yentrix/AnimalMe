@@ -44,14 +44,13 @@
 
 /* Animación altura + opacidad al cambiar login ↔ registro */
 .auth-body-outer {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 0.3s ease-in-out;
+  transition: max-height 0.35s ease-in-out;
   overflow: hidden;
+  max-height: 780px;
 }
 
 .auth-body-outer.exit {
-  grid-template-rows: 0fr;
+  max-height: 560px;
 }
 
 .auth-body-inner {
@@ -69,8 +68,8 @@
   transform: translateY(-6px);
 }
 
-.auth-body:not(.exit) {
-  animation: authFadeIn 0.32s ease-in-out both;
+.auth-body.entering {
+  animation: authFadeIn 0.26s ease-in-out both;
 }
 
 @keyframes authFadeIn {
