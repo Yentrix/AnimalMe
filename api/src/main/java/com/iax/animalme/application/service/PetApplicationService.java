@@ -83,6 +83,9 @@ public class PetApplicationService {
         Pet savedPet = petRepository.save(petToSave);
 
         if (image != null && !image.isEmpty()) {
+            // Replace previous image records so the edited pet keeps a single current photo.
+            imageRepository.deleteByPetId(savedPet.getId());
+
             String fileName = fileStorageService.storeFile(image, "pets", savedPet.getId().toString());
             Image petImage = new Image();
             petImage.setUrl(fileName);

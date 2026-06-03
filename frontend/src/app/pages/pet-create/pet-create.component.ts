@@ -125,9 +125,16 @@ export class PetManagementComponent implements OnInit {
     this.sizeCmInput = this.formatWithUnit(pet.sizeCm, 'cm');
 
     // Si la mascota tiene imagen, mostramos la preview
-    if (pet.images && pet.images.length > 0) {
-      this.imagePreview = pet.images[0].url;
+    this.imagePreview = this.getPetMainImageUrl(pet);
+  }
+
+  getPetMainImageUrl(pet: any): string | null {
+    if (!pet?.images || pet.images.length === 0) {
+      return null;
     }
+
+    const lastImage = pet.images[pet.images.length - 1];
+    return lastImage?.url ?? null;
   }
 
   selectSpecies(species: any) {
