@@ -3,6 +3,7 @@ package com.iax.animalme.application.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.iax.animalme.domain.enums.AdoptionStatus;
@@ -61,6 +62,7 @@ public class PetApplicationService {
         return petRepository.findByOwnerId(ownerId);
     }
 
+    @Transactional
     public Pet updatePet(Long id, Pet petDetails, MultipartFile image) throws Exception {
         validateDescriptionLength(petDetails.getDescription());
 
