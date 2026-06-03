@@ -113,10 +113,16 @@ body:has(.ban-modal-backdrop) .page-container {
     justify-content: center !important;
     background: rgba(0, 0, 0, 0.45) !important;
     backdrop-filter: blur(3px) !important;
-    z-index: 5000 !important;
+     z-index: 10000 !important;
 }
 
-@media (max-width: 900px) {
+.modal-card,
+.ban-modal-card,
+.confirm-delete-modal {
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 900px) or (orientation: portrait) {
     .modal-overlay,
     .modal-backdrop,
     .ban-modal-backdrop {
@@ -139,6 +145,18 @@ body:has(.ban-modal-backdrop) .page-container {
     .confirm-delete-modal {
         max-width: 100% !important;
     }
+}
+
+body:has(.modal-overlay) .topbar,
+body:has(.modal-backdrop) .topbar,
+body:has(.ban-modal-backdrop) .topbar,
+body:has(.modal-overlay) .sidebar,
+body:has(.modal-backdrop) .sidebar,
+body:has(.ban-modal-backdrop) .sidebar,
+body:has(.modal-overlay) .floating-menu-btn,
+body:has(.modal-backdrop) .floating-menu-btn,
+body:has(.ban-modal-backdrop) .floating-menu-btn {
+    pointer-events: none !important;
 }
 
 .no-select {
