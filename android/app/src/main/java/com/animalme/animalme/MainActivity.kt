@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
    private lateinit var btnTryAgain: Button
 
    // Guardamos la ULR para poder usarla fácilmente en el incio y en el botón
-   private val miUrl = "http://jasrama.com"
+   private val miUrl = "http://jasrama.com/"
 
    @SuppressLint("SetJavaScriptEnabled")
    override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +35,10 @@ class MainActivity : AppCompatActivity() {
             // Para móviles modernos (Android 6.0+)
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(view, request, error)
-                showError()
+                // Solo mostramos error si falla la carga de la página principal, no recursos secundarios
+                if (request?.isForMainFrame == true) {
+                    showError()
+                }
             }
 
            // Para mantener la compatibilidad con móviles Android más antiguos
@@ -46,7 +49,13 @@ class MainActivity : AppCompatActivity() {
            }
        }
 
-       myWebView.settings.javaScriptEnabled = true
+       myWebView.settings.apply {
+           javaScriptEnabled = true
+           domStorageEnabled = true    // Soluciona pantallas en blanco en webs modernas
+           databaseEnabled = true      // Ayuda con la persistencia de datos
+           loadWithOverviewMode = true // Ajusta el contenido a la pantalla
+           useWideViewPort = true      // Soporta meta tags de viewport
+       }
        myWebView.loadUrl(miUrl)
 
        // Configuración corregida del botón
