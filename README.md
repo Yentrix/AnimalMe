@@ -6,6 +6,13 @@ AnimalMe es un proyecto desarrolado con **Springboot**, **Angular** y **AndroidS
   <img src="frontend/src/assets/logo_text.png" width="200">
 </p>
  
+ 
+---
+ ## Trello
+ 
+ https://trello.com/b/moh6EA5i/animalme
+ 
+ 
 ---
 
  ## Requisitos previos
